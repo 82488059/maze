@@ -12,7 +12,7 @@ import random
 #	2.Remove the wall from the list.
 
 
-# 随机墙
+# 随机格子
 # prim算法
 def prim_maze(rows, cols):
     num_cols=cols
@@ -21,6 +21,7 @@ def prim_maze(rows, cols):
     wall=[[ ['|','-'] for i in range(num_cols+1)]for i in range(num_rows+1)]
     # 已访问标记
     way=[[ 0 for i in range(num_cols)]for i in range(num_rows)]
+    
     # 设置起点
     r=0
     c=0
