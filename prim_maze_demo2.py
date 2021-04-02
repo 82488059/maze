@@ -98,7 +98,6 @@ def prim_maze_demo(rows, cols):
             #gridlist.remove((r,c))
             # 
             #way[r][c] = 1 # 
-
             check = []
             if c > 0 and way[r][c-1] == 0:
                 check.append('L')  
