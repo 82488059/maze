@@ -1,0 +1,226 @@
+#!/usr/bin/python3.7
+# -*- coding: utf-8 -*-
+import random
+import pygame
+#
+#1.Make the initial cell the current cell and mark it as visited
+#2.While there are unvisited cells
+#	1.If the current cell has any neighbours which have not been visited
+#		1.Choose randomly one of the unvisited neighbours
+#		2.Push the current cell to the stack
+#		3.Remove the wall between the current cell and the chosen cell
+#		4.Make the chosen cell the current cell and mark it as visited
+#	2.Else if stack is not empty
+#		1.Pop a cell from the stack
+#		2.Make it the current cell
+# pygame
+pygame.init()  # 初始化pygame
+size = width, height = 800, 600  # 设置窗口大小
+screen = pygame.display.set_mode(size)  # 显示窗口
+# 行列
+num_cols=30 #
+num_rows=20 #
+
+# 墙 0表示通路 |竖墙 -横墙
+wall=[[ ['|','-'] for i in range(num_cols+1)]for i in range(num_rows+1)]
+
+# 已访问标记
+way=[[ 0 for i in range(num_cols)]for i in range(num_rows)]
+# 颜色
+diamond_color_size = 7
+COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_BLACK, COLOR_GREY, COLOR_NO_DIAMOND = list(range(
+    diamond_color_size))
+COLOR = {
+    COLOR_RED: (255, 0, 0),
+    COLOR_BLUE: (0, 0, 255),
+    COLOR_GREEN: (0, 255, 0),
+    COLOR_YELLOW: (255, 255, 0),
+    COLOR_BLACK: (0, 0, 0),
+    COLOR_GREY: (250, 240, 230),
+    COLOR_NO_DIAMOND: (100, 100, 100),
+}
+# 格子大小
+DIAMOND_SIZE = (20, 20)
+# 格子
+DIAMOND=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND.fill(COLOR[1])
+
+# 绿格子 
+DIAMOND_GREEN=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_GREEN.fill(COLOR[COLOR_GREEN])
+# 红格子 
+DIAMOND_RED=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_RED.fill(COLOR[COLOR_RED])
+# 黄格子 
+DIAMOND_YELLOW=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_YELLOW.fill(COLOR[COLOR_YELLOW])
+# 灰的格子 
+DIAMOND_GREY=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_GREY.fill(COLOR[COLOR_GREY])
+
+def draw_grid(lw, surface, rgb_color):
+    rect = (lw, lw, DIAMOND_SIZE[0] -2*lw, DIAMOND_SIZE[1] -2*lw)
+    pygame.draw.line(surface, rgb_color, (rect[0], rect[1]), (rect[0], rect[3]), lw)
+    pygame.draw.line(surface, rgb_color, (rect[0], rect[1]), (rect[2], rect[1]), lw)
+    pygame.draw.line(surface, rgb_color, (rect[0], rect[3]), (rect[2], rect[3]), lw)
+    pygame.draw.line(surface, rgb_color, (rect[2], rect[1]), (rect[2], rect[3]), lw)
+    return
+
+def draw_wall(lw, surface, rgb_color):
+    rect = (lw, lw, DIAMOND_SIZE[0] -2*lw, DIAMOND_SIZE[1] -2*lw)
+    # 左
+    pygame.draw.line(surface, rgb_color, (rect[0], rect[1]), (rect[0], rect[3]), lw)
+    # 上
+    pygame.draw.line(surface, rgb_color, (rect[0], rect[1]), (rect[2], rect[1]), lw)
+    # 下
+    pygame.draw.line(surface, rgb_color, (rect[0], rect[3]), (rect[2], rect[3]), lw)
+    # 右
+    pygame.draw.line(surface, rgb_color, (rect[2], rect[1]), (rect[2], rect[3]), lw)
+    return
+# 字体
+use_font = pygame.font.Font("FONT.TTF", 16)
+#draw_grid(2, DIAMOND, (128, 128, 128))
+# 背景
+background=pygame.surface.Surface(((num_cols ) * DIAMOND_SIZE[0] + 2 , (num_rows ) * DIAMOND_SIZE[1] + 2)).convert()
+background.fill(COLOR[2])
+
+# 时间
+clock = pygame.time.Clock()
+
+
+def prim_maze_demo():
+    global way
+    global wall
+    # 设置起点
+    r=0
+    c=0
+    # 起点加入记录
+    way[r][c]=1
+    # 墙列表
+    walllist=[]
+    walllist.append((r+1,c,'-'))
+    walllist.append((r,c+1,'|'))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+
+        if walllist:
+            # 随机选一个墙
+            r, c, d = random.choice(walllist)
+            rr,cc,dd=r,c,d
+            # 移除墙
+            walllist.remove((r,c,d))
+            if d == '|':
+                # 如果这面墙分隔的两个单元格只有一个单元格被访问过，那么：
+                if c > 0 and (not way[r][c-1] == way[r][c] ):
+                    #1.把墙打通，将未访问的单元格标记成为迷宫的一部分
+                    wall[r][c][0]=0
+                    if way[r][c] == 1:
+                        nc=c-1
+                    else:
+                        nc=c
+                    c=nc
+                    way[r][c]=1
+                    #2.将单元格相邻的墙加入到墙列表中
+                    # 上
+                    if r > 0 and wall[r][c][1] == '-':
+                        walllist.append((r,c,'-'))
+                    # 下
+                    if r+1 < num_rows and wall[r+1][c][1] == '-':
+                        walllist.append((r+1,c,'-'))
+                    # 左
+                    if c > 0 and wall[r][c][0] == '|':
+                        walllist.append((r,c,'|'))
+                    # 右
+                    if c+1 < num_cols and wall[r][c+1][0] == '|':
+                        walllist.append((r,c+1,'|'))
+            elif d == '-':
+                # 如果这面墙分隔的两个单元格只有一个单元格被访问过，那么：
+                if r > 0 and ( (not way[r-1][c]) == way[r][c] ):
+                    #1.把墙打通，将未访问的单元格标记成为迷宫的一部分
+                    wall[r][c][1]=0
+                    if way[r][c] == 1:
+                        nr=r-1
+                    else:
+                        nr=r
+                    r=nr
+                    way[r][c]=1
+                    #2.将单元格相邻的墙加入到墙列表中
+                    # 上
+                    if r > 0 and wall[r][c][1] == '-':
+                        walllist.append((r,c,'-'))
+                    # 下
+                    if r + 1 < num_rows and wall[r+1][c][1] == '-':
+                        walllist.append((r+1,c,'-'))
+                    # 左
+                    if c > 0 and wall[r][c][0] == '|':
+                        walllist.append((r,c,'|'))
+                    # 右
+                    if c + 1 < num_cols and wall[r][c+1][0] == '|':
+                        walllist.append((r,c+1,'|'))
+            #2.如果墙两面的单元格都已经被访问过，那就从列表里移除这面墙
+            for rrr1, ccc1, ddd1 in walllist:
+                if ddd1 == '|':
+                    if ccc1 > 0 and way[rrr1][ccc1-1] == 1 and way[rrr1][ccc1] == 1:
+                        walllist.remove((rrr1,ccc1,ddd1))
+                elif ddd1 == '-':
+                    if rrr1 > 0 and way[rrr1-1][ccc1] == 1 and way[rrr1][ccc1] == 1:
+                        walllist.remove((rrr1,ccc1,ddd1))
+
+        screen.blit(background, (0, 0))
+        # 格子
+        for x in range(num_cols):
+            for y in range(num_rows):
+                px,py=1 + (x) * DIAMOND_SIZE[0], 1 + (y) * DIAMOND_SIZE[1]
+                # 标记走过的
+                if way[y][x]:
+                    screen.blit(DIAMOND, (px, py))
+                else:
+                    screen.blit(DIAMOND_GREY, (px, py))
+
+        # 画外墙
+        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*num_cols+1, 20*num_rows+1), 2)
+        # 画没打通的墙
+        for x in range( num_cols):
+            for y in range(num_rows):
+                px,py=1 + (x) * DIAMOND_SIZE[0], 1 + (y) * DIAMOND_SIZE[1]
+                color = COLOR[COLOR_BLACK]
+                if wall[y][x][0]:
+                    pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
+                if wall[y][x][1]:
+                    pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
+        
+        # 画记录列表里的墙记
+        for rrr,ccc,ddd in walllist:
+            px,py=1 + (ccc) * DIAMOND_SIZE[0], 1 + (rrr) * DIAMOND_SIZE[1]
+            color = (255,50,255)
+            if ddd == '|':
+                pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
+            else:
+                pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
+        # 画刚被打通的墙
+        if walllist:
+            px,py=1 + (cc) * DIAMOND_SIZE[0], 1 + (rr) * DIAMOND_SIZE[1]
+            color = (255,215,0)
+            if dd == '|':
+                pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
+            else:
+                pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
+        # 
+        if not walllist:
+            score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
+            screen.blit(score_surface, (50, num_rows*22))
+        
+        time_passed = clock.tick(30)
+
+        pygame.display.update()
+    return 
+
+
+
+# main
+if __name__ == "__main__":
+    '''main'''
+    prim_maze_demo()

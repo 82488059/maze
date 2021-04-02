@@ -13,7 +13,6 @@ import pygame
 #	2.Else if stack is not empty
 #		1.Pop a cell from the stack
 #		2.Make it the current cell
-
 # pygame
 pygame.init()  # 初始化pygame
 size = width, height = 800, 600  # 设置窗口大小
@@ -42,6 +41,13 @@ DIAMOND_SIZE = (20, 20)
 # 格子
 DIAMOND=pygame.surface.Surface(DIAMOND_SIZE).convert()
 DIAMOND.fill(COLOR[1])
+
+# 访问过的格子 
+DIAMOND_GREEN=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_GREEN.fill(COLOR[COLOR_GREEN])
+# 访问过的格子 
+DIAMOND_RED=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_RED.fill(COLOR[COLOR_RED])
 
 def draw_grid(lw, surface, rgb_color):
     rect = (lw, lw, DIAMOND_SIZE[0] -2*lw, DIAMOND_SIZE[1] -2*lw)
@@ -75,6 +81,7 @@ history = [(0,0)]
 clock = pygame.time.Clock()
 
 # 算法
+# Recursive backtracker
 def depth_maze():
     r=0
     c=0
@@ -170,7 +177,15 @@ def depth_maze_demo():
         for x in range(num_cols):
             for y in range(num_rows):
                 px,py=1 + x * DIAMOND_SIZE[0], 1 + y * DIAMOND_SIZE[1]
-                screen.blit(DIAMOND, (px, py))
+                # 标记走过的
+                if way[y][x]:
+                    screen.blit(DIAMOND, (px, py))
+                else:
+                    screen.blit(DIAMOND_GREEN, (px, py))
+        
+        px,py=1 + c * DIAMOND_SIZE[0], 1 + r * DIAMOND_SIZE[1]
+        screen.blit(DIAMOND_RED, (px, py))
+
         # 墙
         pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*num_cols+1, 20*num_rows+1), 2)
         # 
@@ -182,17 +197,15 @@ def depth_maze_demo():
 
                 if not wall[y][x][1]:
                     pygame.draw.line(screen, COLOR[COLOR_BLACK], (px, py), (px+20, py), 2)
+                
         if not history:
             score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_BLUE])
             screen.blit(score_surface, (num_cols*22/10, num_rows*22))
         
         time_passed = clock.tick(30)
 
-
         pygame.display.update()
     return 
-
-
 
 
 
@@ -200,5 +213,3 @@ def depth_maze_demo():
 if __name__ == "__main__":
     '''main'''
     depth_maze_demo()
-
-
