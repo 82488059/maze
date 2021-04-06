@@ -3,14 +3,22 @@
 # -*- coding: utf-8 -*-
 import random
 
+# Randomized Prim's algorithm
 #1.Start with a grid full of walls.
 #2.Pick a cell, mark it as part of the maze. Add the walls of the cell to the wall list.
 #3.While there are walls in the list:
 #	1.Pick a random wall from the list. If only one of the two cells that the wall divides is visited, then:
-#		2.Make the wall a passage and mark the unvisited cell as part of the maze.
-#		3.Add the neighboring walls of the cell to the wall list.
+#		1.Make the wall a passage and mark the unvisited cell as part of the maze.
+#		2.Add the neighboring walls of the cell to the wall list.
 #	2.Remove the wall from the list.
-
+# 随机普里姆算法
+# 1。从布满墙壁的网格开始。
+# 2。选一个细胞，把它标记为迷宫的一部分。将单元格的墙添加到墙列表中。
+# 3。名单上有墙:
+#   1。从列表中随机选择一面墙。如果细胞壁分裂的两个细胞中只有一个被访问，那么:
+#       1。将墙壁做成通道，并将未造访的牢房标记为迷宫的一部分。
+#       2。将单元格相邻的墙添加到墙列表中。
+# 2。把墙从列表中移除。
 
 # 随机墙
 # prim算法
@@ -25,6 +33,7 @@ def prim_maze(rows, cols):
     r=0
     c=0
     # 起点加入记录
+    # 标记为迷宫的一部分
     way[r][c]=1
     # 墙列表
     walllist=[]

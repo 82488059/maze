@@ -3,16 +3,27 @@
 import random
 import pygame
 #
-#1.Make the initial cell the current cell and mark it as visited
-#2.While there are unvisited cells
-#	1.If the current cell has any neighbours which have not been visited
-#		1.Choose randomly one of the unvisited neighbours
-#		2.Push the current cell to the stack
-#		3.Remove the wall between the current cell and the chosen cell
-#		4.Make the chosen cell the current cell and mark it as visited
-#	2.Else if stack is not empty
-#		1.Pop a cell from the stack
-#		2.Make it the current cell
+# Randomized depth-first search
+# Recursive implementation
+#1。Choose the initial cell, mark it as visited and push it to the stack
+#2。While the stack is not empty
+#   1。Pop a cell from the stack and make it a current cell
+#   2。If the current cell has any neighbours which have not been visited
+#       1。Push the current cell to the stack
+#       2。Choose one of the unvisited neighbours
+#       3。Remove the wall between the current cell and the chosen cell
+#       4。Mark the chosen cell as visited and push it to the stack
+#随机深度优先搜索
+#递归实现
+#1。选择初始单元格，将其标记为已访问，并将其压入堆栈
+#2。而堆栈不是空的
+#   1。从堆栈中弹出一个单元格并使其成为当前单元格
+#   2。如果当前单元有任何未被访问的邻居
+#       1。将当前单元格压入堆栈
+#       2。选择一个未被拜访的邻居
+#       3。移除当前单元格和所选单元格之间的墙
+#       4。将选中的单元格标记为已访问的，并将其压入堆栈
+
 # pygame
 pygame.init()  # 初始化pygame
 size = width, height = 800, 600  # 设置窗口大小
@@ -80,14 +91,18 @@ history = [(0,0)]
 # 时间
 clock = pygame.time.Clock()
 
-# 算法
+# 墙不占用单元格
+# 可以保证所有的格都是相通的
+# 深度优先算法可以遍历所有的单元格。
+# Randomized depth-first search
 # Recursive backtracker
+# 递归回溯算法
 def depth_maze():
     r=0
     c=0
     history = [(r,c)]
-    # 1.将起点作为当前迷宫单元并标记为已访问
-    # 2.当还存在未标记的迷宫单元，进行循环
+    # 1。选择初始单元格，将其标记为已访问，并将其压入堆栈
+    # 2。堆栈不是空的
     while history:
         way[r][c] = 1 #
         check = []
@@ -99,14 +114,15 @@ def depth_maze():
             check.append('R')
         if r < num_rows-1 and way[r+1][c] == 0:
             check.append('D')    
-        # 2.1.如果当前迷宫单元有未被访问过的的相邻的迷宫单元
-        # 2.1.1.随机选择一个未访问的相邻迷宫单元
-		# 2.1.2.将当前迷宫单元入栈
-        # 2.1.3.移除当前迷宫单元与相邻迷宫单元的墙
-		# 2.1.4.标记相邻迷宫单元并用它作为当前迷宫单元
+        # 如果当前单元有任何未被访问的邻居
         if len(check): 
+            # 选择一个未被拜访的邻居
+            # 移除当前单元格和所选单元格之间的墙
+            # 将选中的单元格标记为已访问的，并将其压入堆栈
             history.append((r, c))
+            # 随机移动
             move_direction = random.choice(check)
+            # 打通墙壁
             if move_direction == 'L':
                 wall[r][c][0] = 1
                 c=c-1
@@ -120,9 +136,7 @@ def depth_maze():
                 r=r+1
                 wall[r][c][1] = 1
         else: 
-            #2.2.如果当前迷宫单元不存在未访问的相邻迷宫单元，并且栈不空
-		    #2.2.1.栈顶的迷宫单元出栈
-		    #2.2.2.令其成为当前迷宫单元
+            #从堆栈中弹出一个单元格并使其成为当前单元格
             r, c = history.pop()
     return wall
 

@@ -71,17 +71,21 @@ background.fill(COLOR[COLOR_BLUE])
 clock = pygame.time.Clock()
 
 
+
+
+
+##############################################
+#   格子访问标记x,y,0，右墙x,y,1，下墙x,y,2
+##############################################
+
+
 # 随机格子
 def prim_maze_demo(rows, cols):
     # 墙 0表示通路 |竖墙 -横墙
-    wall=[[ ['|','-'] for i in range(num_cols)]for i in range(num_rows)]
-    # 已访问标记
-    way=[[ 0 for i in range(num_cols)]for i in range(num_rows)]
+    grids=[[ [0,0,0] for i in range(num_cols)]for i in range(num_rows)]
     # 设置起点
     r=0
     c=0
-    # 设置已经走过
-    way[r][c]=1
     # 格子列表
     gridlist=[]
     gridlist.append((r,c))
@@ -92,37 +96,59 @@ def prim_maze_demo(rows, cols):
                 return
 
         if gridlist:
-            # 随机选择一个格子
-            r, c = random.choice(gridlist)
-            # 
-            #gridlist.remove((r,c))
-            # 
-            #way[r][c] = 1 # 
+            # 随机选一个单元格
+            r,c = random.choice(gridlist)
+            grids[r,c,0] = 1
+            gridlist.remove((r,c))
             check = []
-            if c > 0 and way[r][c-1] == 0:
-                check.append('L')  
-            if r > 0 and way[r-1][c] == 0:
-                check.append('U')
-            if c < num_cols-1 and way[r][c+1] == 0:
-                check.append('R')
-            if r < num_rows-1 and way[r+1][c] == 0:
-                check.append('D')    
-
-            if len(check): 
-                gridlist.append((r, c))
+            # 左
+            if c > 0:
+                if grids[r][c-1][0] == 1:
+                    check.append('L')
+                elif grids[r][c-1][0] == 0:
+                    gridlist.append((r,c-1))
+                    M[r,c-1,0] = 2
+            # 上
+            if r > 0:
+                if grids[r-1,c,0] == 1: 
+                    check.append('U') 
+                elif M[r-1,c,0] == 0:
+                    gridlist.append((r-1,c))
+                    M[r-1,c,0] = 2
+            # 右
+            if c < num_cols-1:
+                if grids[r,c+1,0] == 1: 
+                    check.append('R')
+                elif M[r,c+1,0] == 0:
+                    gridlist.append((r,c+1))
+                    M[r,c+1,0] = 2 
+            # 下
+            if r < num_rows-1:
+                if grids[r+1,c,0] == 1: 
+                    check.append('D') 
+                elif  grids[r+1,c,0] == 0:
+                    gridlist.append((r+1,c))
+                    M[r+1,c,0] = 2
+        
+            # select one of these edges at random.
+            if len(check):
                 move_direction = random.choice(check)
                 if move_direction == 'L':
-                    wall[r][c][0] = 1
-                    c=c-1
+                    M[r,c,0] = 1
+                    c = c-1
+                    M[r,c,2] = 1
                 if move_direction == 'U':
-                    wall[r][c][1] = 1
-                    r=r-1
+                    M[r,c,1] = 1
+                    r = r-1
+                    M[r,c,3] = 1
                 if move_direction == 'R':
-                    c=c+1
-                    wall[r][c][0] = 1
+                    M[r,c,2] = 1
+                    c = c+1
+                    M[r,c,0] = 1
                 if move_direction == 'D':
-                    r=r+1
-                    wall[r][c][1] = 1
+                    M[r,c,3] = 1
+                    r = r+1
+                    M[r,c,1] = 1
 
 
         screen.blit(background, (0, 0))
