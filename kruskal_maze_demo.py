@@ -23,8 +23,8 @@ pygame.init()  # 初始化pygame
 size = width, height = 800, 600  # 设置窗口大小
 screen = pygame.display.set_mode(size)  # 显示窗口
 # 颜色
-diamond_color_size = 7
-COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_BLACK, COLOR_GREY, COLOR_NO_DIAMOND = list(range(
+diamond_color_size = 8
+COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_BLACK, COLOR_GREY, COLOR_GOLDEN, COLOR_NO_DIAMOND = list(range(
     diamond_color_size))
 COLOR = {
     COLOR_RED: (255, 0, 0),
@@ -33,6 +33,7 @@ COLOR = {
     COLOR_YELLOW: (255, 255, 0),
     COLOR_BLACK: (0, 0, 0),
     COLOR_GREY: (250, 240, 230),
+    COLOR_GOLDEN : (255,215,0),
     COLOR_NO_DIAMOND: (100, 100, 100),
 }
 # 格子大小
@@ -169,8 +170,17 @@ def kruskal_maze_demo(rows, cols):
         
         # 随机到的墙
         if walls:
+            # 列表中的墙
+            for rw,cw,xw in walls:
+                px,py=21 + (cw) * DIAMOND_SIZE[0], 21 + (rw) * DIAMOND_SIZE[1]
+                color = COLOR[COLOR_GREEN]
+                if xw == 1:
+                    pygame.draw.line(screen, color, (px, py-20), (px, py), 2)
+                else:
+                    pygame.draw.line(screen, color, (px-20, py), (px, py), 2)
+                    
             px,py=21 + (c) * DIAMOND_SIZE[0], 21 + (r) * DIAMOND_SIZE[1]
-            color = (255,215,0)
+            color = COLOR[COLOR_GOLDEN]
             if x == 1:
                 pygame.draw.line(screen, color, (px, py-20), (px, py), 2)
             else:
