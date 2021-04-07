@@ -1,0 +1,109 @@
+#!/usr/bin/python3.7
+# -*- coding: utf-8 -*-
+import random
+import pygame
+
+#Aldous-Broder algorithm
+#The Aldous-Broder algorithm also produces uniform spanning trees.
+
+# 1.Pick a random cell as the current cell and mark it as visited.
+# 2.While there are unvisited cells:
+#   1.Pick a random neighbour.
+#   2.If the chosen neighbour has not been visited:
+#       1.Remove the wall between the current cell and the chosen neighbour.
+#       2.Mark the chosen neighbour as visited.
+#   3.Make the chosen neighbour the current cell.
+
+# Aldous-Broder算法
+# Aldous-Broder算法也生成统一的生成树。
+# 1。选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
+# 2。当存在未访问细胞时:
+#   1。随机选择一个邻居。
+#   2。如果选中的邻居没有被访问:
+#       1。移除当前单元格和所选邻居之间的墙。
+#       2。标记被选中的邻居已被拜访过。
+#   3。使选择的邻居成为当前单元格。
+
+def aldous_broder_maze(rows, cols):
+    # 墙 [0]表示格子访问标记，右[1]竖墙，下[2]横墙
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。下墙同理)
+    # 初始化未访问，墙未打通
+    grids=[[ [0,0,0] for i in range(cols)]for j in range(rows)]
+    # Aldous-Broder算法
+    # Aldous-Broder算法也生成统一的生成树。
+    # 1。选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
+    # 2。当存在未访问细胞时:
+    #       1。随机选择一个邻居。
+    #       2。如果选中的邻居没有被访问:
+    #           1。移除当前单元格和所选邻居之间的墙。
+    #           2。标记被选中的邻居已被拜访过。
+    #       3。使选择的邻居成为当前单元格。
+
+    notusegrids = [] # 没有访问过的格子
+    for tr in range(rows):
+        for tc in range(cols):
+            notusegrids.append((tr,tc))
+    # 选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
+    r,c = random.choice(notusegrids)
+    # 标记迷宫
+    grids[r][c][0]=1
+    notusegrids.remove((r,c))
+    # 当存在未访问细胞时:
+    while notusegrids:
+        directions = []
+        # 可随机方向
+        if r > 0:
+            directions.append('u')
+        if c > 0:
+            directions.append('l')
+        if r < rows-1:
+            directions.append('d')
+        if c < cols-1:
+            directions.append('r')
+        if len(directions):
+            # 随机一个方向
+            move = random.choice(directions)
+            if move == 'u':
+                newr = r-1
+                newc = c
+                nextgrid=(newr, newc)
+                opwall=(newr, newc, 2)
+            if move == 'l':
+                newr = r
+                newc = c-1
+                nextgrid=(newr, newc)
+                opwall=(newr, newc, 1)
+            if move == 'd':
+                newr = r+1
+                newc = c
+                nextgrid=(newr, newc)
+                opwall=(r, c, 2)
+            if move == 'r':
+                newr = r
+                newc = c+1
+                nextgrid=(newr, newc)
+                opwall=(r, c, 1)
+                
+            # 如果选中的邻居没有被访问:
+            if grids[newr][newc][0] == 0:
+                #   1。移除当前单元格和所选邻居之间的墙。
+                #   2。标记被选中的邻居已被拜访过。
+                #   3。使选择的邻居成为当前单元格。
+                grids[newr][newc][0]=1
+                notusegrids.remove((newr,newc))
+                grids[opwall[0]][opwall[1]][opwall[2]] = 1
+                r=newr
+                c=newc   
+            else:
+                # 使选择的邻居成为当前单元格。
+                r=newr
+                c=newc 
+
+    return grids
+
+
+    
+# main
+if __name__ == "__main__":
+    '''main'''
+    aldous_broder_maze(20, 30)
