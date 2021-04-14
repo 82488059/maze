@@ -69,7 +69,7 @@ def draw_wall(lw, surface, rgb_color):
 use_font = pygame.font.Font("FONT.TTF", 16)
 # 背景
 background=pygame.surface.Surface(size).convert()
-background.fill(COLOR[COLOR_BLUE])
+background.fill(COLOR[COLOR_BLACK])
 # 时间
 clock = pygame.time.Clock()
 
@@ -88,7 +88,7 @@ def kruskal_maze(rows, cols):
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
+    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
     # 设置起点
     r=0
     c=0
@@ -153,7 +153,7 @@ def kruskal_maze_demo(rows, cols):
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
+    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
     # 设置起点
     r=0
     c=0
@@ -215,20 +215,20 @@ def kruskal_maze_demo(rows, cols):
 
         screen.blit(background, (0, 0))
         # 格子
-        for cx in range(num_cols):
-            for ry in range(num_rows):
+        for cx in range(cols):
+            for ry in range(rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 # 标记访问过的格子
-                if grids[ry][cx][0]:
+                if not grids[ry][cx][0]:
                     screen.blit(DIAMOND, (px, py))
                 else:
                     screen.blit(DIAMOND_GREY, (px, py))
 
         # 画外墙
-        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*num_cols+1, 20*num_rows+1), 2)
+        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*cols+1, 20*rows+1), 2)
         # 画没打通的墙
-        for cx in range( num_cols):
-            for ry in range(num_rows):
+        for cx in range( cols):
+            for ry in range(rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_BLACK]
                 if not wall[ry][cx][0]:
@@ -257,7 +257,7 @@ def kruskal_maze_demo(rows, cols):
         # 
         if not wallList:
             score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
-            screen.blit(score_surface, (50, num_rows*22))
+            screen.blit(score_surface, (50, rows*22))
         
         time_passed = clock.tick(30)
 

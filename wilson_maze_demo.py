@@ -65,8 +65,9 @@ use_font = pygame.font.Font("FONT.TTF", 16)
 num_cols=30 #
 num_rows=20 #
 # 背景
-background=pygame.surface.Surface(((num_cols ) * DIAMOND_SIZE[0] + 2 , (num_rows ) * DIAMOND_SIZE[1] + 2)).convert()
-background.fill(COLOR[COLOR_BLUE])
+# 背景
+background=pygame.surface.Surface(size).convert()
+background.fill(COLOR[COLOR_BLACK])
 # 时间
 clock = pygame.time.Clock()
 
@@ -182,7 +183,7 @@ def wilson_maze_demo(rows, cols):
             for ry in range(num_rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 # 标记访问过的格子
-                if grids[ry][cx][0]:
+                if 0 == grids[ry][cx][0]:
                     screen.blit(DIAMOND, (px, py))
                 else:
                     screen.blit(DIAMOND_GREY, (px, py))
