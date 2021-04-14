@@ -86,6 +86,14 @@ background.fill(COLOR[COLOR_BLUE])
 # 时间
 clock = pygame.time.Clock()
 
+WALL=0  # 有墙
+NOWALL=1 # 无墙
+VISIT=1 # 到访过
+NOVISIT=0 # 没到过
+VERTICAL = 0 # 垂直的
+HORIZONTAL = 1# 水平的
+
+
 # 墙不占用单元格
 # 可以保证所有的格都是相通的
 # 深度优先算法可以遍历所有的单元格。

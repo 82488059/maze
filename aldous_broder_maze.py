@@ -22,6 +22,13 @@ import random
 #       1。移除当前单元格和所选邻居之间的墙。
 #       2。标记被选中的邻居已被拜访过。
 #   3。使选择的邻居成为当前单元格。
+WALL=0  # 有墙
+NOWALL=1 # 无墙
+VISIT=1 # 到访过
+NOVISIT=0 # 没到过
+VERTICAL = 0 # 垂直的
+HORIZONTAL = 1# 水平的
+
 
 def aldous_broder_maze(rows, cols):
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。

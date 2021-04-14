@@ -16,10 +16,14 @@ import pygame
 #   1。如果由这个壁分隔的细胞属于不同的集合:
 #       1。移除当前的墙。
 #       2。加入以前分裂的细胞组。
+WALL=0  # 有墙
+NOWALL=1 # 无墙
+VISIT=1 # 到访过
+NOVISIT=0 # 没到过
+VERTICAL = 0 # 垂直的
+HORIZONTAL = 1# 水平的
 
-##############################################
-#   格子访问标记x,y,0，x,y右墙x,y,1，下墙x,y,2。
-##############################################
+
 def kruskal_maze(rows, cols):
     # [0]表示格子访问标记
     grids=[[ [0] for i in range(cols)]for i in range(rows)]

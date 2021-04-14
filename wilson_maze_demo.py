@@ -76,31 +76,33 @@ clock = pygame.time.Clock()
 ##############################################
 
 
-# 
-def add2maze(grids, notusegrids, tgrids, twalls):
-    for (r,c) in tgrids:
-        notusegrids.remove((r,c))
-        grids[r][c][0]=1
-    for (r,c,x) in twalls:
-        grids[r][c][x]=1 
-    return 
+WALL=0  # 有墙
+NOWALL=1 # 无墙
+VISIT=1 # 到访过
+NOVISIT=0 # 没到过
+VERTICAL = 0 # 垂直的
+HORIZONTAL = 1# 水平的
 
 # 随机格子
 def wilson_maze_demo(rows, cols):
-    # 墙 [0]表示格子访问标记，右[1]竖墙，下[2]横墙
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。下墙同理)
-    # 初始化未访问，墙未打通
-    grids=[[ [0,0,0] for i in range(cols)]for j in range(rows)]
-    
-# 我们任意选择一个单元格开始初始化迷宫算法。
-# 然后我们随机选择一个新单元格，开始执行随机漫步，直到我们到达迷宫中已经存在的单元格，然而，
-# 如果在任意一点随机漫步到达自己的路径，形成一个循环，在继续之前从路径中删除循环。
-# 当路径到达迷宫时，我们将其添加到迷宫中。
-# 然后我们从另一个任意的起始单元执行另一个循环擦除的随机漫步，
-# 重复，直到填充完所有单元格。
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [WALL,WALL] for i in range(cols+1)]for i in range(rows+1)]
+    # 已访问标记
+    grids=[[ NOVISIT for i in range(cols)]for j in range(rows)]
+    # 我们任意选择一个单元格开始初始化迷宫算法。
+    # 然后我们随机选择一个新单元格，开始执行随机漫步，直到我们到达迷宫中已经存在的单元格，然而，
+    # 如果在任意一点随机漫步到达自己的路径，形成一个循环，在继续之前从路径中删除循环。
+    # 当路径到达迷宫时，我们将其添加到迷宫中。
+    # 然后我们从另一个任意的起始单元执行另一个循环擦除的随机漫步，
+    # 重复，直到填充完所有单元格。
 
-# 无论我们使用哪种方法来选择开始单元格，这个过程都是无偏的。
-# 因此，为了简单起见，我们可以按照从左到右、从上到下的顺序选择第一个未填充的单元格。
+    # 无论我们使用哪种方法来选择开始单元格，这个过程都是无偏的。
+    # 因此，为了简单起见，我们可以按照从左到右、从上到下的顺序选择第一个未填充的单元格。
     tmpgrids = [] # 临时路径
     tmpwalls = [] # 临时路径中的墙
     notusegrids = [] # 没有访问过的格子
@@ -110,7 +112,7 @@ def wilson_maze_demo(rows, cols):
     r,c = random.choice(notusegrids)
     notusegrids.remove((r,c))
     # 标记迷宫
-    grids[r][c][0]=1
+    grids[r][c]=VISIT
     # 
     r,c = notusegrids[0]
     tmpgrids.append((r,c))
@@ -138,22 +140,22 @@ def wilson_maze_demo(rows, cols):
                     newr = r-1
                     newc = c
                     nextgrid=(newr, newc)
-                    opwall=(newr, newc, 2)
+                    opwall=(r, c, HORIZONTAL)
                 if move == 'l':
                     newr = r
                     newc = c-1
                     nextgrid=(newr, newc)
-                    opwall=(newr, newc, 1)
+                    opwall=(r, c, VERTICAL)
                 if move == 'd':
                     newr = r+1
                     newc = c
                     nextgrid=(newr, newc)
-                    opwall=(r, c, 2)
+                    opwall=(newr, newc, HORIZONTAL)
                 if move == 'r':
                     newr = r
                     newc = c+1
                     nextgrid=(newr, newc)
-                    opwall=(r, c, 1)
+                    opwall=(newr, newc, VERTICAL)
                 # 
                 if (newr, newc) in tmpgrids:
                     # 随机到环路
@@ -162,10 +164,16 @@ def wilson_maze_demo(rows, cols):
                     tmpwalls=tmpwalls[:i]
                     r=newr
                     c=newc
-                elif grids[newr][newc][0] == 1:
+                elif grids[newr][newc] == VISIT:
                     # 遇到到迷宫
                     tmpwalls.append(opwall)
-                    add2maze(grids, notusegrids, tmpgrids, tmpwalls)      
+                    # 加入迷宫
+                    for (r,c) in tmpgrids:
+                        notusegrids.remove((r,c))
+                        grids[r][c]=VISIT
+                    for (r,c,x) in tmpwalls:
+                        wall[r][c][x]=NOWALL
+                        
                     tmpgrids=[]
                     tmpwalls=[]
                     if notusegrids:
@@ -183,7 +191,7 @@ def wilson_maze_demo(rows, cols):
             for ry in range(num_rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 # 标记访问过的格子
-                if 0 == grids[ry][cx][0]:
+                if NOVISIT == grids[ry][cx]:
                     screen.blit(DIAMOND, (px, py))
                 else:
                     screen.blit(DIAMOND_GREY, (px, py))
@@ -197,23 +205,23 @@ def wilson_maze_demo(rows, cols):
         # 画没打通的墙
         for cx in range( num_cols):
             for ry in range(num_rows):
-                px,py=21 + (cx) * DIAMOND_SIZE[0], 21 + (ry) * DIAMOND_SIZE[1]
+                px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_BLACK]
-                if not grids[ry][cx][1]:
-                    pygame.draw.line(screen, color, (px, py-20), (px, py), 2)
-                if not grids[ry][cx][2]:
-                    pygame.draw.line(screen, color, (px-20, py), (px, py), 2)
+                if WALL == wall[ry][cx][0]:
+                    pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
+                if WALL == wall[ry][cx][1]:
+                    pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
 
         # 随机到的墙
         if tmpwalls:
             # 列表中的墙
             for rw,cw,xw in tmpwalls:
-                px,py=21 + (cw) * DIAMOND_SIZE[0], 21 + (rw) * DIAMOND_SIZE[1]
+                px,py=1 + (cw) * DIAMOND_SIZE[0], 1 + (rw) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_GREEN]
-                if xw == 1:
-                    pygame.draw.line(screen, color, (px, py-20), (px, py), 2)
+                if xw == VERTICAL:
+                    pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
                 else:
-                    pygame.draw.line(screen, color, (px-20, py), (px, py), 2)
+                    pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
 
         # 
         if not notusegrids:
