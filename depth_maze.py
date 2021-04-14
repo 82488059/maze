@@ -36,6 +36,8 @@ def depth_maze(rows, cols):
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
     # wall[x][y][0]竖墙wall[x][y][0][1]横墙
+    # 左[0]竖墙，上[1]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
     wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
     # way用来标记已经访问过的格子

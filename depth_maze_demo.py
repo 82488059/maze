@@ -208,7 +208,6 @@ def depth_maze_demo():
                 px,py=1 + x * DIAMOND_SIZE[0], 1 + y * DIAMOND_SIZE[1]
                 if not wall[y][x][0]:
                     pygame.draw.line(screen, COLOR[COLOR_BLACK], (px, py), (px, py+20), 2)
-
                 if not wall[y][x][1]:
                     pygame.draw.line(screen, COLOR[COLOR_BLACK], (px, py), (px+20, py), 2)
                 

@@ -25,20 +25,17 @@ import pygame
 #   3。使选择的邻居成为当前单元格。
 
 def aldous_broder_maze(rows, cols):
-    # 墙 [0]表示格子访问标记，右[1]竖墙，下[2]横墙
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。下墙同理)
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化未访问，墙未打通
-    grids=[[ [0,0,0] for i in range(cols)]for j in range(rows)]
-    # Aldous-Broder算法
-    # Aldous-Broder算法也生成统一的生成树。
-    # 1。选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
-    # 2。当存在未访问细胞时:
-    #       1。随机选择一个邻居。
-    #       2。如果选中的邻居没有被访问:
-    #           1。移除当前单元格和所选邻居之间的墙。
-    #           2。标记被选中的邻居已被拜访过。
-    #       3。使选择的邻居成为当前单元格。
-
+    grids=[[ [0] for i in range(cols)]for j in range(rows)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
     notusegrids = [] # 没有访问过的格子
     for tr in range(rows):
         for tc in range(cols):
@@ -66,24 +63,19 @@ def aldous_broder_maze(rows, cols):
             if move == 'u':
                 newr = r-1
                 newc = c
-                nextgrid=(newr, newc)
-                opwall=(newr, newc, 2)
+                opwall=(r, c, 1)
             if move == 'l':
                 newr = r
                 newc = c-1
-                nextgrid=(newr, newc)
-                opwall=(newr, newc, 1)
+                opwall=(r, c, 0)
             if move == 'd':
                 newr = r+1
                 newc = c
-                nextgrid=(newr, newc)
-                opwall=(r, c, 2)
+                opwall=(newr, newc, 1)
             if move == 'r':
                 newr = r
                 newc = c+1
-                nextgrid=(newr, newc)
-                opwall=(r, c, 1)
-                
+                opwall=(newr, newc, 0)
             # 如果选中的邻居没有被访问:
             if grids[newr][newc][0] == 0:
                 #   1。移除当前单元格和所选邻居之间的墙。
@@ -91,15 +83,14 @@ def aldous_broder_maze(rows, cols):
                 #   3。使选择的邻居成为当前单元格。
                 grids[newr][newc][0]=1
                 notusegrids.remove((newr,newc))
-                grids[opwall[0]][opwall[1]][opwall[2]] = 1
+                wall[opwall[0]][opwall[1]][opwall[2]] = 1
                 r=newr
                 c=newc   
             else:
                 # 使选择的邻居成为当前单元格。
                 r=newr
                 c=newc 
-
-    return grids
+    return wall
 
 
     
