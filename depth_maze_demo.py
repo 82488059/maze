@@ -31,10 +31,7 @@ screen = pygame.display.set_mode(size)  # 显示窗口
 # 行列
 num_cols=30
 num_rows=20
-# 墙0表示墙1表示通路[0]竖墙[1]横墙
-wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
-# 已访问标记
-way=[[ 0 for i in range(num_cols)]for i in range(num_rows)]
+
 # 颜色
 diamond_color_size = 6
 COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_BLACK, COLOR_NO_DIAMOND = list(range(
@@ -83,11 +80,9 @@ def draw_wall(lw, surface, rgb_color):
 use_font = pygame.font.Font("FONT.TTF", 16)
 #draw_grid(2, DIAMOND, (128, 128, 128))
 # 背景
-background=pygame.surface.Surface(((num_cols ) * DIAMOND_SIZE[0] + 2 , (num_rows ) * DIAMOND_SIZE[1] + 2)).convert()
-background.fill(COLOR[2])
+background=pygame.surface.Surface(size).convert()
+background.fill(COLOR[COLOR_BLUE])
 
-# 记录        
-history = [(0,0)]
 # 时间
 clock = pygame.time.Clock()
 
@@ -97,32 +92,40 @@ clock = pygame.time.Clock()
 # Randomized depth-first search
 # Recursive backtracker
 # 递归回溯算法
-def depth_maze():
+def depth_maze(rows, cols):
+    history = [(0,0)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][0][1]横墙
+    # 左[0]竖墙，上[1]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
+    # way用来标记已经访问过的格子
+    # 初始化全未访问
+    way=[[ 0 for i in range(cols)]for i in range(rows)]
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化未访问，墙未打通
     r=0
     c=0
-    history = [(r,c)]
     # 1。选择初始单元格，将其标记为已访问，并将其压入堆栈
     # 2。堆栈不是空的
     while history:
-        way[r][c] = 1 #
+        way[r][c] = 1 # 
         check = []
         if c > 0 and way[r][c-1] == 0:
             check.append('L')  
         if r > 0 and way[r-1][c] == 0:
             check.append('U')
-        if c < num_cols-1 and way[r][c+1] == 0:
+        if c < cols-1 and way[r][c+1] == 0:
             check.append('R')
-        if r < num_rows-1 and way[r+1][c] == 0:
+        if r < rows-1 and way[r+1][c] == 0:
             check.append('D')    
-        # 如果当前单元有任何未被访问的邻居
+
         if len(check): 
-            # 选择一个未被拜访的邻居
-            # 移除当前单元格和所选单元格之间的墙
-            # 将选中的单元格标记为已访问的，并将其压入堆栈
             history.append((r, c))
-            # 随机移动
             move_direction = random.choice(check)
-            # 打通墙壁
             if move_direction == 'L':
                 wall[r][c][0] = 1
                 c=c-1
@@ -136,24 +139,32 @@ def depth_maze():
                 r=r+1
                 wall[r][c][1] = 1
         else: 
-            #从堆栈中弹出一个单元格并使其成为当前单元格
             r, c = history.pop()
     return wall
 
 
-def depth_maze_demo():
-    global history
-    global way
-    global wall
+def depth_maze_demo(rows, cols):
+    history = [(0,0)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][0][1]横墙
+    # 左[0]竖墙，上[1]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
+    # way用来标记已经访问过的格子
+    # 初始化全未访问
+    way=[[ 0 for i in range(cols)]for i in range(rows)]
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化未访问，墙未打通
     r=0
     c=0
     history = [(r,c)]
-
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-
         if history:
             way[r][c] = 1 # 
             check = []
@@ -161,9 +172,9 @@ def depth_maze_demo():
                 check.append('L')  
             if r > 0 and way[r-1][c] == 0:
                 check.append('U')
-            if c < num_cols-1 and way[r][c+1] == 0:
+            if c < cols-1 and way[r][c+1] == 0:
                 check.append('R')
-            if r < num_rows-1 and way[r+1][c] == 0:
+            if r < rows-1 and way[r+1][c] == 0:
                 check.append('D')    
 
             if len(check): 
@@ -188,8 +199,8 @@ def depth_maze_demo():
         
         #screen.blit(background, (x, y))
         # 格子
-        for x in range(num_cols):
-            for y in range(num_rows):
+        for x in range(cols):
+            for y in range(rows):
                 px,py=1 + x * DIAMOND_SIZE[0], 1 + y * DIAMOND_SIZE[1]
                 # 标记走过的
                 if way[y][x]:
@@ -201,10 +212,10 @@ def depth_maze_demo():
         screen.blit(DIAMOND_RED, (px, py))
 
         # 墙
-        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*num_cols+1, 20*num_rows+1), 2)
+        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*cols+1, 20*rows+1), 2)
         # 
-        for x in range(num_cols):
-            for y in range(num_rows):
+        for x in range(cols):
+            for y in range(rows):
                 px,py=1 + x * DIAMOND_SIZE[0], 1 + y * DIAMOND_SIZE[1]
                 if not wall[y][x][0]:
                     pygame.draw.line(screen, COLOR[COLOR_BLACK], (px, py), (px, py+20), 2)
@@ -213,7 +224,7 @@ def depth_maze_demo():
                 
         if not history:
             score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_BLUE])
-            screen.blit(score_surface, (num_cols*22/10, num_rows*22))
+            screen.blit(score_surface, (cols*22/10, rows*22))
         
         time_passed = clock.tick(30)
 
@@ -225,4 +236,4 @@ def depth_maze_demo():
 # main
 if __name__ == "__main__":
     '''main'''
-    depth_maze_demo()
+    depth_maze_demo(20,30)

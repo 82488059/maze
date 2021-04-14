@@ -95,6 +95,16 @@ clock = pygame.time.Clock()
 
 # 随机墙
 def prim_maze_demo():
+    # [0]表示格子访问标记
+    grids=[[ [0] for i in range(cols)]for i in range(rows)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
+
     global way
     global wall
     # 设置起点
