@@ -3,7 +3,7 @@
 import random
 import pygame
 #import depth_maze
-import kruskal_maze
+import maze
 #import aldous_broder_maze
 
 pygame.init()  # 初始化pygame
@@ -64,7 +64,7 @@ HORIZONTAL = 1# 水平的
 # 深度优先寻路演示代码
 def depth_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
     # walls = depth_maze.depth_maze(rows, cols)
-    grids=[[ 0 for i in range(cols)]for j in range(rows)]
+    grids=[[ maze.NOVISIT for i in range(cols)]for j in range(rows)]
     # 标记迷宫
     findEndPoint=False
     # 起点
@@ -77,30 +77,30 @@ def depth_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
         stopPoint=(rows-1,cols-1)
 
     pathList=[(r,c)] # 路径
-    grids[r][c]=1 # 1标记已经到过格子
+    grids[r][c]=maze.VISIT # 标记已经到过格子
     # 当存在未访问格子时:
     while pathList and not findEndPoint:        
         move=None
-        if r>0 and walls[r][c][1] and 1 != grids[r-1][c]:
+        if r>0 and maze.NOWALL == walls[r][c][1] and maze.VISIT != grids[r-1][c]:
             move = 'u'
             nr=r-1
             nc=c
-        elif c>0 and walls[r][c][0] and 1 != grids[r][c-1]:
+        elif c>0 and maze.NOWALL == walls[r][c][0] and maze.VISIT != grids[r][c-1]:
             move='l'
             nr=r
             nc=c-1
-        elif c<cols-1 and walls[r][c+1][0] and 1 != grids[r][c+1]:
+        elif c<cols-1 and maze.NOWALL == walls[r][c+1][0] and maze.VISIT != grids[r][c+1] :
             move='r'
             nr=r
             nc=c+1
-        elif r<rows-1 and walls[r+1][c][1] and 1 != grids[r+1][c]:
+        elif r<rows-1 and maze.NOWALL == walls[r+1][c][1] and maze.VISIT != grids[r+1][c] :
             move='d'
             nr=r+1
             nc=c
         if move:
-            # 路过的格子加入路径
+            # 加入路径
             pathList.append((r,c))
-            # 移动到下个格子
+            # move到下个点
             r=nr
             c=nc
             if (r,c) == stopPoint:
@@ -108,24 +108,25 @@ def depth_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
                 pathList.append((r,c))
                 findEndPoint=True
             else:
-                grids[r][c]=1
+                grids[r][c]=maze.VISIT
         else:
-            # 退回上一个格子
             (r,c) = pathList.pop()
+
     return pathList
 
 
 # 深度优先寻路演示代码
 def depth_pathfinding_demo(rows, cols):
-    #walls = depth_maze.depth_maze(rows, cols)
-    walls = kruskal_maze.kruskal_maze(rows, cols)
+    #walls = maze.aldous_broder_maze(rows, cols)
+    #walls = maze.depth_maze(rows, cols)
+    #walls = maze.kruskal_maze(rows, cols)
+    #walls = maze.prim_maze(rows, cols)
+    walls = maze.wilson_maze(rows, cols)
     # fpath = depth_pathfinding(rows,cols, walls)
     POSX=40
     POSY=40
-    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化未访问，墙未打通
-    grids=[[ 0 for i in range(cols)]for j in range(rows)]
+    grids=[[ maze.NOVISIT for i in range(cols)]for j in range(rows)]
     # 标记迷宫
     r=0
     c=0
@@ -135,7 +136,7 @@ def depth_pathfinding_demo(rows, cols):
     # 终点
     stopPoint=(rows-1,cols-1)
     pathList=[(r,c)] # 路径
-    grids[r][c]=1 # 1标记已经到过格子
+    grids[r][c]=maze.VISIT # 标记已经到过格子
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -143,19 +144,19 @@ def depth_pathfinding_demo(rows, cols):
         # 当存在未访问细胞时:
         if  pathList and not findEndPoint:        
             move=None
-            if r>0 and walls[r][c][1] and 1 != grids[r-1][c]:
+            if r>0 and maze.NOWALL == walls[r][c][1] and maze.VISIT != grids[r-1][c]:
                 move = 'u'
                 nr=r-1
                 nc=c
-            elif c>0 and walls[r][c][0] and 1 != grids[r][c-1]:
+            elif c>0 and maze.NOWALL == walls[r][c][0] and maze.VISIT != grids[r][c-1]:
                 move='l'
                 nr=r
                 nc=c-1
-            elif c<cols-1 and walls[r][c+1][0] and 1 != grids[r][c+1] :
+            elif c<cols-1 and maze.NOWALL == walls[r][c+1][0] and maze.VISIT != grids[r][c+1] :
                 move='r'
                 nr=r
                 nc=c+1
-            elif r<rows-1 and walls[r+1][c][1] and 1 != grids[r+1][c] :
+            elif r<rows-1 and maze.NOWALL == walls[r+1][c][1] and maze.VISIT != grids[r+1][c] :
                 move='d'
                 nr=r+1
                 nc=c
@@ -170,7 +171,7 @@ def depth_pathfinding_demo(rows, cols):
                     pathList.append((r,c))
                     findEndPoint=True
                 else:
-                    grids[r][c]=1
+                    grids[r][c]=maze.VISIT
             else:
                 (r,c) = pathList.pop()
 
@@ -182,7 +183,7 @@ def depth_pathfinding_demo(rows, cols):
             for ry in range(rows):
                 px,py=POSX + 1 + (cx) * DIAMOND_SIZE[0], POSY + 1 + (ry) * DIAMOND_SIZE[1]
                 # 标记访问过的格子
-                if grids[ry][cx]:
+                if maze.VISIT == grids[ry][cx]:
                     screen.blit(DIAMOND, (px, py))
                 else:
                     screen.blit(DIAMOND_GREY, (px, py))
@@ -205,9 +206,9 @@ def depth_pathfinding_demo(rows, cols):
                 color2 = COLOR[COLOR_GREY]
                 color2 = COLOR[COLOR_RED]
                 color3 = COLOR[COLOR_GREY]
-                if 0 == walls[ry][cx][0]:
+                if maze.WALL == walls[ry][cx][0]:
                     pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
-                if 0 == walls[ry][cx][1]:
+                if maze.WALL == walls[ry][cx][1]:
                     pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
                 #if 2 == walls[ry][cx][0]:
                 #    pygame.draw.line(screen, color2, (px, py), (px, py+20), 2)

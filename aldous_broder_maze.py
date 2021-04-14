@@ -1,7 +1,7 @@
 #!/usr/bin/python3.7
 # -*- coding: utf-8 -*-
 import random
-
+import maze 
 #Aldous-Broder algorithm
 #The Aldous-Broder algorithm also produces uniform spanning trees.
 
@@ -22,26 +22,29 @@ import random
 #       1。移除当前单元格和所选邻居之间的墙。
 #       2。标记被选中的邻居已被拜访过。
 #   3。使选择的邻居成为当前单元格。
-WALL=0  # 有墙
-NOWALL=1 # 无墙
-VISIT=1 # 到访过
-NOVISIT=0 # 没到过
-VERTICAL = 0 # 垂直的
-HORIZONTAL = 1# 水平的
 
+#标记 
+NOWALL=maze.NOWALL # 无墙
+WALL=maze.WALL  # 有墙
+WALL2=maze.WALL2  # 有墙
+
+VISIT=maze.VISIT # 到访过
+NOVISIT=maze.NOVISIT # 没到过
+VERTICAL = maze.VERTICAL # 垂直的
+HORIZONTAL = maze.HORIZONTAL# 水平的
 
 def aldous_broder_maze(rows, cols):
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化未访问，墙未打通
-    grids=[[ [0] for i in range(cols)]for j in range(rows)]
+    grids=[[ NOVISIT for i in range(cols)]for j in range(rows)]
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
     # wall[x][y][0]竖墙wall[x][y][1]横墙
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
+    wall=[[ [WALL,WALL] for i in range(cols)]for i in range(rows)]
     notusegrids = [] # 没有访问过的格子
     for tr in range(rows):
         for tc in range(cols):
@@ -49,7 +52,7 @@ def aldous_broder_maze(rows, cols):
     # 选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
     r,c = random.choice(notusegrids)
     # 标记迷宫
-    grids[r][c][0]=1
+    grids[r][c]=VISIT
     notusegrids.remove((r,c))
     # 当存在未访问细胞时:
     while notusegrids:
@@ -69,27 +72,27 @@ def aldous_broder_maze(rows, cols):
             if move == 'u':
                 newr = r-1
                 newc = c
-                opwall=(r, c, 1)
+                opWALL=(r, c, HORIZONTAL)
             if move == 'l':
                 newr = r
                 newc = c-1
-                opwall=(r, c, 0)
+                opWALL=(r, c, VERTICAL)
             if move == 'd':
                 newr = r+1
                 newc = c
-                opwall=(newr, newc, 1)
+                opWALL=(newr, newc, HORIZONTAL)
             if move == 'r':
                 newr = r
                 newc = c+1
-                opwall=(newr, newc, 0)
+                opWALL=(newr, newc, VERTICAL)
             # 如果选中的邻居没有被访问:
-            if grids[newr][newc][0] == 0:
+            if grids[newr][newc] == NOVISIT:
                 #   1。移除当前单元格和所选邻居之间的墙。
                 #   2。标记被选中的邻居已被拜访过。
                 #   3。使选择的邻居成为当前单元格。
-                grids[newr][newc][0]=1
+                grids[newr][newc]=VISIT
                 notusegrids.remove((newr,newc))
-                wall[opwall[0]][opwall[1]][opwall[2]] = 1
+                wall[opWALL[0]][opWALL[1]][opWALL[2]] = NOWALL
                 r=newr
                 c=newc   
             else:
@@ -97,7 +100,6 @@ def aldous_broder_maze(rows, cols):
                 r=newr
                 c=newc 
     return wall
-
 
     
 # main

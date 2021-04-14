@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import random
 import pygame
+import maze
 #Aldous-Broder algorithm
 #The Aldous-Broder algorithm also produces uniform spanning trees.
 
@@ -70,97 +71,29 @@ background.fill(COLOR[COLOR_BLUE])
 # 时间
 clock = pygame.time.Clock()
 
-##############################################
-#   格子访问标记x,y,0，右墙x,y,1，下墙x,y,2
-##############################################
-WALL=0  # 有墙
-NOWALL=1 # 无墙
-VISIT=1 # 到访过
-NOVISIT=0 # 没到过
-VERTICAL = 0 # 垂直的
-HORIZONTAL = 1# 水平的
+#标记 
+NOWALL=maze.NOWALL # 无墙
+WALL=maze.WALL  # 有墙
+WALL2=maze.WALL2  # 有墙
 
-
-def aldous_broder_maze(rows, cols):
-    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
-    # 初始化未访问，墙未打通
-    grids=[[ [0] for i in range(cols)]for j in range(rows)]
-    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
-    # 墙0通路1。x,y是墙的坐标。
-    # wall[x][y][0]竖墙wall[x][y][1]横墙
-    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
-    # 初始化全为墙
-    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
-    notusegrids = [] # 没有访问过的格子
-    for tr in range(rows):
-        for tc in range(cols):
-            notusegrids.append((tr,tc))
-    # 选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
-    r,c = random.choice(notusegrids)
-    # 标记迷宫
-    grids[r][c][0]=1
-    notusegrids.remove((r,c))
-    # 当存在未访问细胞时:
-    while notusegrids:
-        directions = []
-        # 可随机方向
-        if r > 0:
-            directions.append('u')
-        if c > 0:
-            directions.append('l')
-        if r < rows-1:
-            directions.append('d')
-        if c < cols-1:
-            directions.append('r')
-        if len(directions):
-            # 随机一个方向
-            move = random.choice(directions)
-            if move == 'u':
-                newr = r-1
-                newc = c
-                opwall=(r, c, 1)
-            if move == 'l':
-                newr = r
-                newc = c-1
-                opwall=(r, c, 0)
-            if move == 'd':
-                newr = r+1
-                newc = c
-                opwall=(newr, newc, 1)
-            if move == 'r':
-                newr = r
-                newc = c+1
-                opwall=(newr, newc, 0)
-            # 如果选中的邻居没有被访问:
-            if grids[newr][newc][0] == 0:
-                #   1。移除当前单元格和所选邻居之间的墙。
-                #   2。标记被选中的邻居已被拜访过。
-                #   3。使选择的邻居成为当前单元格。
-                grids[newr][newc][0]=1
-                notusegrids.remove((newr,newc))
-                wall[opwall[0]][opwall[1]][opwall[2]] = 1
-                r=newr
-                c=newc   
-            else:
-                # 使选择的邻居成为当前单元格。
-                r=newr
-                c=newc 
-    return wall
+VISIT=maze.VISIT # 到访过
+NOVISIT=maze.NOVISIT # 没到过
+VERTICAL = maze.VERTICAL # 垂直的
+HORIZONTAL = maze.HORIZONTAL# 水平的
 
 # 随机格子
 def aldous_broder_maze_demo(rows, cols):
+        # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化未访问，墙未打通
-    grids=[[ [0] for i in range(cols)]for j in range(rows)]
+    grids=[[ NOVISIT for i in range(cols)]for j in range(rows)]
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
     # wall[x][y][0]竖墙wall[x][y][1]横墙
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
-
+    wall=[[ [WALL,WALL] for i in range(cols)]for i in range(rows)]
     notusegrids = [] # 没有访问过的格子
     for tr in range(rows):
         for tc in range(cols):
@@ -168,10 +101,9 @@ def aldous_broder_maze_demo(rows, cols):
     # 选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
     r,c = random.choice(notusegrids)
     # 标记迷宫
-    grids[r][c][0]=1
+    grids[r][c]=VISIT
     notusegrids.remove((r,c))
-    #wall = aldous_broder_maze(rows, cols)
-    #notusegrids=[]
+    # 当存在未访问细胞时:
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -194,27 +126,27 @@ def aldous_broder_maze_demo(rows, cols):
                 if move == 'u':
                     newr = r-1
                     newc = c
-                    opwall=(r, c, 1)
+                    opwall=(r, c, HORIZONTAL)
                 if move == 'l':
                     newr = r
                     newc = c-1
-                    opwall=(r, c, 0)
+                    opwall=(r, c, VERTICAL)
                 if move == 'd':
                     newr = r+1
                     newc = c
-                    opwall=(newr, newc, 1)
+                    opwall=(newr, newc, HORIZONTAL)
                 if move == 'r':
                     newr = r
                     newc = c+1
-                    opwall=(newr, newc, 0)
+                    opwall=(newr, newc, VERTICAL)
                 # 如果选中的邻居没有被访问:
-                if grids[newr][newc][0] == 0:
+                if grids[newr][newc] == NOVISIT:
                     #   1。移除当前单元格和所选邻居之间的墙。
                     #   2。标记被选中的邻居已被拜访过。
                     #   3。使选择的邻居成为当前单元格。
-                    grids[newr][newc][0]=1
+                    grids[newr][newc]=VISIT
                     notusegrids.remove((newr,newc))
-                    wall[opwall[0]][opwall[1]][opwall[2]] = 1
+                    wall[opwall[0]][opwall[1]][opwall[2]] = NOWALL
                     r=newr
                     c=newc   
                 else:
@@ -228,7 +160,7 @@ def aldous_broder_maze_demo(rows, cols):
             for ry in range(num_rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 # 标记访问过的格子
-                if grids[ry][cx][0]:
+                if NOVISIT == grids[ry][cx]:
                     screen.blit(DIAMOND, (px, py))
                 else:
                     screen.blit(DIAMOND_GREY, (px, py))
@@ -244,9 +176,9 @@ def aldous_broder_maze_demo(rows, cols):
             for ry in range(num_rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_BLACK]
-                if not wall[ry][cx][0]:
+                if WALL == wall[ry][cx][0]:
                     pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
-                if not wall[ry][cx][1]:
+                if WALL ==  wall[ry][cx][1]:
                     pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
 
         # 

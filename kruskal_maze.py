@@ -1,7 +1,7 @@
 #!/usr/bin/python3.7
 # -*- coding: utf-8 -*-
 import random
-import pygame
+import maze
 # Randomized Kruskal's algorithm
 # This algorithm is a randomized version of Kruskal's algorithm.
 # 1.Create a list of all walls, and create a set for each cell, each containing just that one cell.
@@ -16,24 +16,27 @@ import pygame
 #   1。如果由这个壁分隔的细胞属于不同的集合:
 #       1。移除当前的墙。
 #       2。加入以前分裂的细胞组。
-WALL=0  # 有墙
-NOWALL=1 # 无墙
-VISIT=1 # 到访过
-NOVISIT=0 # 没到过
-VERTICAL = 0 # 垂直的
-HORIZONTAL = 1# 水平的
+#标记 
+NOWALL=maze.NOWALL # 无墙
+WALL=maze.WALL  # 有墙
+WALL2=maze.WALL2  # 有墙
+
+VISIT=maze.VISIT # 到访过
+NOVISIT=maze.NOVISIT # 没到过
+VERTICAL = maze.VERTICAL # 垂直的
+HORIZONTAL = maze.HORIZONTAL# 水平的
 
 
 def kruskal_maze(rows, cols):
     # [0]表示格子访问标记
-    grids=[[ [0] for i in range(cols)]for i in range(rows)]
+    grids=[[ NOVISIT for i in range(cols)]for i in range(rows)]
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
     # wall[x][y][0]竖墙wall[x][y][1]横墙
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
+    wall=[[ [WALL,WALL] for i in range(cols)]for i in range(rows)]
     # 设置起点
     r=0
     c=0
@@ -47,11 +50,11 @@ def kruskal_maze(rows, cols):
     for r in range(rows):
         for c in range(cols):
             collection.append([(r,c)])
-            for x in range(0,2):
+            for x in (HORIZONTAL, VERTICAL):
                 # 最左和上的墙不能打通
-                if r == 0 and x == 1:
+                if r == 0 and x == HORIZONTAL:
                     continue
-                if c == 0 and x == 0:
+                if c == 0 and x == VERTICAL:
                     continue
                 wallList.append((r,c,x))
     while wallList:
@@ -60,7 +63,7 @@ def kruskal_maze(rows, cols):
         # 每个墙随机到一次
         wallList.remove((r,c,x))
         # a,b相邻的集合
-        if x == 0: # 竖墙
+        if x == VERTICAL: # 竖墙
             a = (r,c-1)
             b = (r,c)
         else :  # 横墙
@@ -74,12 +77,12 @@ def kruskal_maze(rows, cols):
             if b in coll:
                 coll2 = coll
         # 设置访问过
-        grids[a[0]][a[1]][0] = 1
-        grids[b[0]][b[1]][0] = 1
+        grids[a[0]][a[1]] = VISIT
+        grids[b[0]][b[1]] = VISIT
         # 
         if coll1 != coll2:
             # 打通墙
-            wall[r][c][x] = 1
+            wall[r][c][x] = NOWALL
             # 合并集合
             coll = coll1+coll2
             collection.remove(coll1)

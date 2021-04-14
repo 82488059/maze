@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import random
 import pygame
+import maze
 # Randomized Prim's algorithm
 #1.Start with a grid full of walls.
 #2.Pick a cell, mark it as part of the maze. Add the walls of the cell to the wall list.
@@ -62,12 +63,14 @@ background.fill(COLOR[COLOR_BLACK])
 # 时间
 clock = pygame.time.Clock()
 #标记 
-WALL=1  # 有墙
-NOWALL=0 # 无墙
-VISIT=1 # 到访过
-NOVISIT=0 # 没到过
-VERTICAL = 0 # 垂直的
-HORIZONTAL = 1# 水平的
+NOWALL=maze.NOWALL # 无墙
+WALL=maze.WALL  # 有墙
+WALL2=maze.WALL2  # 有墙
+
+VISIT=maze.VISIT # 到访过
+NOVISIT=maze.NOVISIT # 没到过
+VERTICAL = maze.VERTICAL # 垂直的
+HORIZONTAL = maze.HORIZONTAL# 水平的
 
 # 随机墙
 def prim_maze_demo(rows, cols):

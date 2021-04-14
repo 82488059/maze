@@ -3,12 +3,104 @@
 import random
 
 #标记 
-WALL=0  # 有墙
-NOWALL=1 # 无墙
+NOWALL=0 # 无墙
+WALL=1  # 有墙
+WALL2=2  # 有墙
+
 VISIT=1 # 到访过
 NOVISIT=0 # 没到过
 VERTICAL = 0 # 垂直的
 HORIZONTAL = 1# 水平的
+
+
+#Aldous-Broder algorithm
+#The Aldous-Broder algorithm also produces uniform spanning trees.
+
+# 1.Pick a random cell as the current cell and mark it as visited.
+# 2.While there are unvisited cells:
+#   1.Pick a random neighbour.
+#   2.If the chosen neighbour has not been visited:
+#       1.Remove the wall between the current cell and the chosen neighbour.
+#       2.Mark the chosen neighbour as visited.
+#   3.Make the chosen neighbour the current cell.
+
+# Aldous-Broder算法
+# Aldous-Broder算法也生成统一的生成树。
+# 1。选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
+# 2。当存在未访问细胞时:
+#   1。随机选择一个邻居。
+#   2。如果选中的邻居没有被访问:
+#       1。移除当前单元格和所选邻居之间的墙。
+#       2。标记被选中的邻居已被拜访过。
+#   3。使选择的邻居成为当前单元格。
+
+def aldous_broder_maze(rows, cols):
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化未访问，墙未打通
+    grids=[[ NOVISIT for i in range(cols)]for j in range(rows)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [WALL,WALL] for i in range(cols)]for i in range(rows)]
+    notusegrids = [] # 没有访问过的格子
+    for tr in range(rows):
+        for tc in range(cols):
+            notusegrids.append((tr,tc))
+    # 选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
+    r,c = random.choice(notusegrids)
+    # 标记迷宫
+    grids[r][c]=VISIT
+    notusegrids.remove((r,c))
+    # 当存在未访问细胞时:
+    while notusegrids:
+        directions = []
+        # 可随机方向
+        if r > 0:
+            directions.append('u')
+        if c > 0:
+            directions.append('l')
+        if r < rows-1:
+            directions.append('d')
+        if c < cols-1:
+            directions.append('r')
+        if len(directions):
+            # 随机一个方向
+            move = random.choice(directions)
+            if move == 'u':
+                newr = r-1
+                newc = c
+                opwall=(r, c, HORIZONTAL)
+            if move == 'l':
+                newr = r
+                newc = c-1
+                opwall=(r, c, VERTICAL)
+            if move == 'd':
+                newr = r+1
+                newc = c
+                opwall=(newr, newc, HORIZONTAL)
+            if move == 'r':
+                newr = r
+                newc = c+1
+                opwall=(newr, newc, VERTICAL)
+            # 如果选中的邻居没有被访问:
+            if grids[newr][newc] == NOVISIT:
+                #   1。移除当前单元格和所选邻居之间的墙。
+                #   2。标记被选中的邻居已被拜访过。
+                #   3。使选择的邻居成为当前单元格。
+                grids[newr][newc]=VISIT
+                notusegrids.remove((newr,newc))
+                wall[opwall[0]][opwall[1]][opwall[2]] = NOWALL
+                r=newr
+                c=newc   
+            else:
+                # 使选择的邻居成为当前单元格。
+                r=newr
+                c=newc 
+    return wall
 
 
 # Randomized depth-first search
@@ -38,8 +130,6 @@ HORIZONTAL = 1# 水平的
 # Recursive backtracker
 # 递归回溯算法
 def depth_maze(rows, cols):
-    num_cols=cols
-    num_rows=rows
     history = [(0,0)]
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
@@ -47,10 +137,10 @@ def depth_maze(rows, cols):
     # 左[0]竖墙，上[1]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
+    wall=[[ [WALL,WALL] for i in range(cols)]for i in range(rows)]
     # way用来标记已经访问过的格子
     # 初始化全未访问
-    way=[[ 0 for i in range(num_cols)]for i in range(num_rows)]
+    way=[[ NOVISIT for i in range(cols)]for i in range(rows)]
     # 设置起点
     r=0
     c=0
@@ -59,16 +149,16 @@ def depth_maze(rows, cols):
     # 1。选择初始单元格，将其标记为已访问，并将其压入堆栈
     # 2。堆栈不是空的
     while history:
-        way[r][c] = 1 #
+        way[r][c] = VISIT #
         check = []
         # 可以移动到的位置
-        if c > 0 and way[r][c-1] == 0:
+        if c > 0 and way[r][c-1] == NOVISIT:
             check.append('L')  
-        if r > 0 and way[r-1][c] == 0:
+        if r > 0 and way[r-1][c] == NOVISIT:
             check.append('U')
-        if c < num_cols-1 and way[r][c+1] == 0:
+        if c < cols-1 and way[r][c+1] == NOVISIT:
             check.append('R')
-        if r < num_rows-1 and way[r+1][c] == 0:
+        if r < rows-1 and way[r+1][c] == NOVISIT:
             check.append('D')    
         # 如果当前单元有任何未被访问的邻居
         if len(check): 
@@ -80,113 +170,21 @@ def depth_maze(rows, cols):
             move_direction = random.choice(check)
             # 打通墙壁
             if move_direction == 'L':
-                wall[r][c][0] = 1
+                wall[r][c][0] = NOWALL
                 c=c-1
             if move_direction == 'U':
-                wall[r][c][1] = 1
+                wall[r][c][1] = NOWALL
                 r=r-1
             if move_direction == 'R':
                 c=c+1
-                wall[r][c][0] = 1
+                wall[r][c][0] = NOWALL
             if move_direction == 'D':
                 r=r+1
-                wall[r][c][1] = 1
+                wall[r][c][1] = NOWALL
         else: 
             #从堆栈中弹出一个单元格并使其成为当前单元格
             r, c = history.pop()
     return wall
-
-
-
-#Aldous-Broder algorithm
-#The Aldous-Broder algorithm also produces uniform spanning trees.
-
-# 1.Pick a random cell as the current cell and mark it as visited.
-# 2.While there are unvisited cells:
-#   1.Pick a random neighbour.
-#   2.If the chosen neighbour has not been visited:
-#       1.Remove the wall between the current cell and the chosen neighbour.
-#       2.Mark the chosen neighbour as visited.
-#   3.Make the chosen neighbour the current cell.
-
-# Aldous-Broder算法
-# Aldous-Broder算法也生成统一的生成树。
-# 1。选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
-# 2。当存在未访问细胞时:
-#   1。随机选择一个邻居。
-#   2。如果选中的邻居没有被访问:
-#       1。移除当前单元格和所选邻居之间的墙。
-#       2。标记被选中的邻居已被拜访过。
-#   3。使选择的邻居成为当前单元格。
-
-def aldous_broder_maze(rows, cols):
-    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
-    # 初始化未访问，墙未打通
-    grids=[[ [0] for i in range(cols)]for j in range(rows)]
-    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
-    # 墙0通路1。x,y是墙的坐标。
-    # wall[x][y][0]竖墙wall[x][y][1]横墙
-    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
-    # 初始化全为墙
-    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
-    notusegrids = [] # 没有访问过的格子
-    for tr in range(rows):
-        for tc in range(cols):
-            notusegrids.append((tr,tc))
-    # 选择一个随机的单元格作为当前单元格，并将其标记为已访问的。
-    r,c = random.choice(notusegrids)
-    # 标记迷宫
-    grids[r][c][0]=1
-    notusegrids.remove((r,c))
-    # 当存在未访问细胞时:
-    while notusegrids:
-        directions = []
-        # 可随机方向
-        if r > 0:
-            directions.append('u')
-        if c > 0:
-            directions.append('l')
-        if r < rows-1:
-            directions.append('d')
-        if c < cols-1:
-            directions.append('r')
-        if len(directions):
-            # 随机一个方向
-            move = random.choice(directions)
-            if move == 'u':
-                newr = r-1
-                newc = c
-                opwall=(r, c, 1)
-            if move == 'l':
-                newr = r
-                newc = c-1
-                opwall=(r, c, 0)
-            if move == 'd':
-                newr = r+1
-                newc = c
-                opwall=(newr, newc, 1)
-            if move == 'r':
-                newr = r
-                newc = c+1
-                opwall=(newr, newc, 0)
-            # 如果选中的邻居没有被访问:
-            if grids[newr][newc][0] == 0:
-                #   1。移除当前单元格和所选邻居之间的墙。
-                #   2。标记被选中的邻居已被拜访过。
-                #   3。使选择的邻居成为当前单元格。
-                grids[newr][newc][0]=1
-                notusegrids.remove((newr,newc))
-                wall[opwall[0]][opwall[1]][opwall[2]] = 1
-                r=newr
-                c=newc   
-            else:
-                # 使选择的邻居成为当前单元格。
-                r=newr
-                c=newc 
-    return wall
-
 
 # Randomized Kruskal's algorithm
 # This algorithm is a randomized version of Kruskal's algorithm.
@@ -203,19 +201,16 @@ def aldous_broder_maze(rows, cols):
 #       1。移除当前的墙。
 #       2。加入以前分裂的细胞组。
 
-##############################################
-#   格子访问标记x,y,0，x,y右墙x,y,1，下墙x,y,2。
-##############################################
 def kruskal_maze(rows, cols):
     # [0]表示格子访问标记
-    grids=[[ [0] for i in range(cols)]for i in range(rows)]
+    grids=[[ NOVISIT for i in range(cols)]for i in range(rows)]
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
     # wall[x][y][0]竖墙wall[x][y][1]横墙
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
+    wall=[[ [WALL,WALL] for i in range(cols)]for i in range(rows)]
     # 设置起点
     r=0
     c=0
@@ -229,11 +224,11 @@ def kruskal_maze(rows, cols):
     for r in range(rows):
         for c in range(cols):
             collection.append([(r,c)])
-            for x in range(0,2):
+            for x in (HORIZONTAL, VERTICAL):
                 # 最左和上的墙不能打通
-                if r == 0 and x == 1:
+                if r == 0 and x == HORIZONTAL:
                     continue
-                if c == 0 and x == 0:
+                if c == 0 and x == VERTICAL:
                     continue
                 wallList.append((r,c,x))
     while wallList:
@@ -242,7 +237,7 @@ def kruskal_maze(rows, cols):
         # 每个墙随机到一次
         wallList.remove((r,c,x))
         # a,b相邻的集合
-        if x == 0: # 竖墙
+        if x == VERTICAL: # 竖墙
             a = (r,c-1)
             b = (r,c)
         else :  # 横墙
@@ -256,19 +251,228 @@ def kruskal_maze(rows, cols):
             if b in coll:
                 coll2 = coll
         # 设置访问过
-        grids[a[0]][a[1]][0] = 1
-        grids[b[0]][b[1]][0] = 1
+        grids[a[0]][a[1]] = VISIT
+        grids[b[0]][b[1]] = VISIT
         # 
         if coll1 != coll2:
             # 打通墙
-            wall[r][c][x] = 1
+            wall[r][c][x] = NOWALL
             # 合并集合
             coll = coll1+coll2
             collection.remove(coll1)
             collection.remove(coll2)
             collection.append(coll)
     return wall
-    
+
+
+# Randomized Prim's algorithm
+#1.Start with a grid full of walls.
+#2.Pick a cell, mark it as part of the maze. Add the walls of the cell to the wall list.
+#3.While there are walls in the list:
+#	1.Pick a random wall from the list. If only one of the two cells that the wall divides is visited, then:
+#		1.Make the wall a passage and mark the unvisited cell as part of the maze.
+#		2.Add the neighboring walls of the cell to the wall list.
+#	2.Remove the wall from the list.
+# 随机普里姆算法
+# 1。从布满墙壁的网格开始。
+# 2。选一个细胞，把它标记为迷宫的一部分。将单元格的墙添加到墙列表中。
+# 3。名单上有墙:
+#   1。从列表中随机选择一面墙。如果细胞壁分裂的两个细胞中只有一个被访问，那么:
+#       1。将墙壁做成通道，并将未造访的牢房标记为迷宫的一部分。
+#       2。将单元格相邻的墙添加到墙列表中。
+# 2。把墙从列表中移除。
+
+# 随机墙
+# prim算法
+def prim_maze(rows, cols):
+     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [WALL,WALL] for i in range(cols+1)]for i in range(rows+1)]
+    # 已访问标记
+    way=[[ NOVISIT for i in range(cols)]for i in range(rows)]
+    # 设置起点
+    r=0
+    c=0
+    # 起点加入记录
+    # 标记为迷宫的一部分
+    way[r][c]=VISIT
+    # 墙列表
+    walllist=[]
+    walllist.append((r+1,c, HORIZONTAL))
+    walllist.append((r,c+1, VERTICAL))
+    # 
+    while walllist:
+        # 随机选一个墙
+        r, c, d = random.choice(walllist)
+        rr,cc,dd=r,c,d
+        # 移除墙
+        walllist.remove((r,c,d))
+        if d == VERTICAL:
+            # 如果这面墙分隔的两个单元格只有一个单元格被访问过，那么：
+            if c > 0 and (not way[r][c-1] == way[r][c] ):
+                #1.把墙打通，将未访问的单元格标记成为迷宫的一部分
+                wall[r][c][0]=NOWALL
+                if way[r][c] == VISIT:
+                    nc=c-1
+                else:
+                    nc=c
+                c=nc
+                way[r][c]=VISIT
+                #2.将单元格相邻的墙加入到墙列表中
+                # 上
+                if r > 0 and wall[r][c][1] == WALL:
+                    walllist.append((r,c,1))
+                # 下
+                if r+1 < rows and wall[r+1][c][1] == WALL:
+                    walllist.append((r+1,c,1))
+                # 左
+                if c > 0 and wall[r][c][0] == WALL:
+                    walllist.append((r,c,0))
+                # 右
+                if c+1 < cols and wall[r][c+1][0] == WALL:
+                    walllist.append((r,c+1,0))
+        elif d == HORIZONTAL:
+            # 如果这面墙分隔的两个单元格只有一个单元格被访问过，那么：
+            if r > 0 and ( (not way[r-1][c]) == way[r][c] ):
+                #1.把墙打通，将未访问的单元格标记成为迷宫的一部分
+                wall[r][c][1]=NOWALL
+                if way[r][c] == VISIT:
+                    nr=r-1
+                else:
+                    nr=r
+                r=nr
+                way[r][c]=VISIT
+                #2.将单元格相邻的墙加入到墙列表中
+                # 上
+                if r > 0 and wall[r][c][1] == WALL:
+                    walllist.append((r,c,1))
+                # 下
+                if r + 1 < rows and wall[r+1][c][1] == WALL:
+                    walllist.append((r+1,c,1))
+                # 左
+                if c > 0 and wall[r][c][0] == WALL:
+                    walllist.append((r,c,0))
+                # 右
+                if c + 1 < cols and wall[r][c+1][0] == WALL:
+                    walllist.append((r,c+1,0))
+        #2.如果墙两面的单元格都已经被访问过，那就从列表里移除这面墙
+        for rrr1, ccc1, ddd1 in walllist:
+            if ddd1 == VERTICAL:
+                if ccc1 > 0 and way[rrr1][ccc1-1] == VISIT and way[rrr1][ccc1] == VISIT:
+                    walllist.remove((rrr1,ccc1,ddd1))
+            elif ddd1 == HORIZONTAL:
+                if rrr1 > 0 and way[rrr1-1][ccc1] == VISIT and way[rrr1][ccc1] == VISIT:
+                    walllist.remove((rrr1,ccc1,ddd1))
+
+    return wall
+
+
+
+# 随机格子
+def wilson_maze(rows, cols):
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [WALL,WALL] for i in range(cols+1)]for i in range(rows+1)]
+    # 已访问标记
+    grids=[[ NOVISIT for i in range(cols)]for j in range(rows)]
+    # 我们任意选择一个单元格开始初始化迷宫算法。
+    # 然后我们随机选择一个新单元格，开始执行随机漫步，直到我们到达迷宫中已经存在的单元格，然而，
+    # 如果在任意一点随机漫步到达自己的路径，形成一个循环，在继续之前从路径中删除循环。
+    # 当路径到达迷宫时，我们将其添加到迷宫中。
+    # 然后我们从另一个任意的起始单元执行另一个循环擦除的随机漫步，
+    # 重复，直到填充完所有单元格。
+
+    # 无论我们使用哪种方法来选择开始单元格，这个过程都是无偏的。
+    # 因此，为了简单起见，我们可以按照从左到右、从上到下的顺序选择第一个未填充的单元格。
+    tmpgrids = [] # 临时路径
+    tmpwalls = [] # 临时路径中的墙
+    notusegrids = [] # 没有访问过的格子
+    for tr in range(rows):
+        for tc in range(cols):
+            notusegrids.append((tr,tc))
+    r,c = random.choice(notusegrids)
+    notusegrids.remove((r,c))
+    # 标记迷宫
+    grids[r][c]=VISIT
+    # 
+    r,c = notusegrids[0]
+    tmpgrids.append((r,c))
+
+    while  notusegrids:
+        #r,c = notusegrids[0]
+        directions = []
+        # 可随机方向
+        if r > 0:
+            directions.append('u')
+        if c > 0:
+            directions.append('l')
+        if r < rows-1:
+            directions.append('d')
+        if c < cols-1:
+            directions.append('r')
+        if len(directions):
+            # 随机一个方向
+            move = random.choice(directions)
+            if move == 'u':
+                newr = r-1
+                newc = c
+                nextgrid=(newr, newc)
+                opwall=(r, c, HORIZONTAL)
+            if move == 'l':
+                newr = r
+                newc = c-1
+                nextgrid=(newr, newc)
+                opwall=(r, c, VERTICAL)
+            if move == 'd':
+                newr = r+1
+                newc = c
+                nextgrid=(newr, newc)
+                opwall=(newr, newc, HORIZONTAL)
+            if move == 'r':
+                newr = r
+                newc = c+1
+                nextgrid=(newr, newc)
+                opwall=(newr, newc, VERTICAL)
+            # 
+            if (newr, newc) in tmpgrids:
+                # 随机到环路
+                i = tmpgrids.index((newr, newc))
+                tmpgrids=tmpgrids[:i+1]
+                tmpwalls=tmpwalls[:i]
+                r=newr
+                c=newc
+            elif grids[newr][newc] == VISIT:
+                # 遇到到迷宫
+                tmpwalls.append(opwall)
+                # 加入迷宫
+                for (r,c) in tmpgrids:
+                    notusegrids.remove((r,c))
+                    grids[r][c]=VISIT
+                for (r,c,x) in tmpwalls:
+                    wall[r][c][x]=NOWALL
+                    
+                tmpgrids=[]
+                tmpwalls=[]
+                if notusegrids:
+                    r,c = notusegrids[0]   
+                    tmpgrids.append((r, c))
+            else:    
+                tmpgrids.append(nextgrid)
+                tmpwalls.append(opwall)
+                r=newr 
+                c=newc
+
+    return wall
+
+
 # main
 if __name__ == "__main__":
     '''main'''

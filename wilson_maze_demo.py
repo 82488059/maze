@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import random
 import pygame
+import maze 
 # We begin the algorithm by initializing the maze with one cell chosen arbitrarily.
 # Then we start at a new cell chosen arbitrarily,# and perform a random walk until we reach a cell already in the maze—however, 
 # if at any point the random walk reaches its own path, forming a loop,
@@ -76,12 +77,15 @@ clock = pygame.time.Clock()
 ##############################################
 
 
-WALL=0  # 有墙
-NOWALL=1 # 无墙
-VISIT=1 # 到访过
-NOVISIT=0 # 没到过
-VERTICAL = 0 # 垂直的
-HORIZONTAL = 1# 水平的
+#标记 
+NOWALL=maze.NOWALL # 无墙
+WALL=maze.WALL  # 有墙
+WALL2=maze.WALL2  # 有墙
+
+VISIT=maze.VISIT # 到访过
+NOVISIT=maze.NOVISIT # 没到过
+VERTICAL = maze.VERTICAL # 垂直的
+HORIZONTAL = maze.HORIZONTAL# 水平的
 
 # 随机格子
 def wilson_maze_demo(rows, cols):
