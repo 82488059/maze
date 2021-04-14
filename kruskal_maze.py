@@ -20,13 +20,16 @@ import pygame
 ##############################################
 #   格子访问标记x,y,0，x,y右墙x,y,1，下墙x,y,2。
 ##############################################
-
-# 随机格子
 def kruskal_maze(rows, cols):
-    # 墙 [0]表示格子访问标记，右[1]竖墙，下[2]横墙
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。下墙同理)
-    # 初始化未访问，墙未打通
-    grids=[[ [0,0,0] for i in range(cols)]for i in range(rows)]
+    # [0]表示格子访问标记
+    grids=[[ [0] for i in range(cols)]for i in range(rows)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
     # 设置起点
     r=0
     c=0
@@ -36,53 +39,49 @@ def kruskal_maze(rows, cols):
     # 单元格集合
     collection =[]
     # 墙壁的列表
-    walls=[]
+    wallList=[]
     for r in range(rows):
         for c in range(cols):
             collection.append([(r,c)])
-            for x in range(1,3):
-                # 最右和最下的墙不能打通
-                if r == rows - 1 and x == 2:
+            for x in range(0,2):
+                # 最左和上的墙不能打通
+                if r == 0 and x == 1:
                     continue
-                if c == cols - 1 and x == 1:
+                if c == 0 and x == 0:
                     continue
-                walls.append((r,c,x))
-
-    while walls:
+                wallList.append((r,c,x))
+    while wallList:
         # 随机选一个墙
-            r,c,x = random.choice(walls)
-            # a,b相邻的集合
-            if x == 1: # 竖墙
-                a = (r,c)
-                b = (r,c+1)
-            else :  # 横墙
-                a = (r,c)
-                b = (r+1,c)
-            coll1 = []
-            coll2 = []
-            for coll in collection:
-                if a in coll:
-                    coll1 = coll
-                if b in coll:
-                    coll2 = coll
-            # 设置访问过
-            grids[a[0]][a[1]][0] = 1
-            grids[b[0]][b[1]][0] = 1
-            # 
-            if coll1 == coll2:
-                walls.remove((r,c,x))
-            else:
-                # 打通墙
-                grids[r][c][x] = 1
-                # 
-                coll = coll1+coll2
-                collection.remove(coll1)
-                collection.remove(coll2)
-                collection.append(coll)
-                walls.remove((r,c,x))
-        
-    return grids
-
+        r,c,x = random.choice(wallList)
+        # 每个墙随机到一次
+        wallList.remove((r,c,x))
+        # a,b相邻的集合
+        if x == 0: # 竖墙
+            a = (r,c-1)
+            b = (r,c)
+        else :  # 横墙
+            a = (r,c)
+            b = (r-1,c)
+        coll1 = []
+        coll2 = []
+        for coll in collection:
+            if a in coll:
+                coll1 = coll
+            if b in coll:
+                coll2 = coll
+        # 设置访问过
+        grids[a[0]][a[1]][0] = 1
+        grids[b[0]][b[1]][0] = 1
+        # 
+        if coll1 != coll2:
+            # 打通墙
+            wall[r][c][x] = 1
+            # 合并集合
+            coll = coll1+coll2
+            collection.remove(coll1)
+            collection.remove(coll2)
+            collection.append(coll)
+    return wall
 
 
 # main

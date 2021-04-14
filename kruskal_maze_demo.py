@@ -82,11 +82,16 @@ clock = pygame.time.Clock()
 
 
 # 随机格子
-def kruskal_maze_demo(rows, cols):
-    # 墙 [0]表示格子访问标记，右[1]竖墙，下[2]横墙
-    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。下墙同理)
-    # 初始化未访问，墙未打通
-    grids=[[ [0,0,0] for i in range(cols)]for i in range(rows)]
+def kruskal_maze(rows, cols):
+    # [0]表示格子访问标记
+    grids=[[ [0] for i in range(cols)]for i in range(rows)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
     # 设置起点
     r=0
     c=0
@@ -96,35 +101,101 @@ def kruskal_maze_demo(rows, cols):
     # 单元格集合
     collection =[]
     # 墙壁的列表
-    walls=[]
+    wallList=[]
     for r in range(rows):
         for c in range(cols):
             collection.append([(r,c)])
-            for x in range(1,3):
-                # 最右和下的墙不能打通
-                if r == rows - 1 and x == 2:
+            for x in range(0,2):
+                # 最左和上的墙不能打通
+                if r == 0 and x == 1:
                     continue
-                if c == cols - 1 and x == 1:
+                if c == 0 and x == 0:
                     continue
-                walls.append((r,c,x))
+                wallList.append((r,c,x))
+    while wallList:
+        # 随机选一个墙
+        r,c,x = random.choice(wallList)
+        # 每个墙随机到一次
+        wallList.remove((r,c,x))
+        # a,b相邻的集合
+        if x == 0: # 竖墙
+            a = (r,c-1)
+            b = (r,c)
+        else :  # 横墙
+            a = (r,c)
+            b = (r-1,c)
+        coll1 = []
+        coll2 = []
+        for coll in collection:
+            if a in coll:
+                coll1 = coll
+            if b in coll:
+                coll2 = coll
+        # 设置访问过
+        grids[a[0]][a[1]][0] = 1
+        grids[b[0]][b[1]][0] = 1
+        # 
+        if coll1 != coll2:
+            # 打通墙
+            wall[r][c][x] = 1
+            # 合并集合
+            coll = coll1+coll2
+            collection.remove(coll1)
+            collection.remove(coll2)
+            collection.append(coll)
+    return wall
 
+
+# 随机格子
+def kruskal_maze_demo(rows, cols):
+    # [0]表示格子访问标记
+    grids=[[ [0] for i in range(cols)]for i in range(rows)]
+    # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
+    # 墙0通路1。x,y是墙的坐标。
+    # wall[x][y][0]竖墙wall[x][y][1]横墙
+    # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
+    # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
+    # 初始化全为墙
+    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
+    # 设置起点
+    r=0
+    c=0
+    # 格子列表
+    gridlist=[]
+    gridlist.append((r,c))
+    # 单元格集合
+    collection =[]
+    # 墙壁的列表
+    wallList=[]
+    for r in range(rows):
+        for c in range(cols):
+            collection.append([(r,c)])
+            for x in range(0,2):
+                # 最左和上的墙不能打通
+                if r == 0 and x == 1:
+                    continue
+                if c == 0 and x == 0:
+                    continue
+                wallList.append((r,c,x))
+    #wall=kruskal_maze(rows, cols)
+    #wallList=[]
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
 
-        if  walls:
+        if  wallList:
             # 随机选一个墙
-            r,c,x = random.choice(walls)
+            r,c,x = random.choice(wallList)
             # 每个墙随机到一次
-            walls.remove((r,c,x))
+            wallList.remove((r,c,x))
             # a,b相邻的集合
-            if x == 1: # 竖墙
-                a = (r,c)
-                b = (r,c+1)
+            if x == 0: # 竖墙
+                a = (r,c-1)
+                b = (r,c)
             else :  # 横墙
                 a = (r,c)
-                b = (r+1,c)
+                b = (r-1,c)
             coll1 = []
             coll2 = []
             for coll in collection:
@@ -138,7 +209,7 @@ def kruskal_maze_demo(rows, cols):
             # 
             if coll1 != coll2:
                 # 打通墙
-                grids[r][c][x] = 1
+                wall[r][c][x] = 1
                 # 合并集合
                 coll = coll1+coll2
                 collection.remove(coll1)
@@ -161,33 +232,33 @@ def kruskal_maze_demo(rows, cols):
         # 画没打通的墙
         for cx in range( num_cols):
             for ry in range(num_rows):
-                px,py=21 + (cx) * DIAMOND_SIZE[0], 21 + (ry) * DIAMOND_SIZE[1]
+                px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_BLACK]
-                if not grids[ry][cx][1]:
-                    pygame.draw.line(screen, color, (px, py-20), (px, py), 2)
-                if not grids[ry][cx][2]:
-                    pygame.draw.line(screen, color, (px-20, py), (px, py), 2)
+                if not wall[ry][cx][0]:
+                    pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
+                if not wall[ry][cx][1]:
+                    pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
         
         # 随机到的墙
-        if walls:
+        if wallList:
             # 列表中的墙
-            for rw,cw,xw in walls:
-                px,py=21 + (cw) * DIAMOND_SIZE[0], 21 + (rw) * DIAMOND_SIZE[1]
+            for rw,cw,xw in wallList:
+                px,py=1 + (cw) * DIAMOND_SIZE[0], 1 + (rw) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_GREEN]
-                if xw == 1:
-                    pygame.draw.line(screen, color, (px, py-20), (px, py), 2)
+                if xw == 0:
+                    pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
                 else:
-                    pygame.draw.line(screen, color, (px-20, py), (px, py), 2)
-                    
-            px,py=21 + (c) * DIAMOND_SIZE[0], 21 + (r) * DIAMOND_SIZE[1]
+                    pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
+            # 当前墙
+            px,py=1 + (c) * DIAMOND_SIZE[0], 1 + (r) * DIAMOND_SIZE[1]
             color = COLOR[COLOR_GOLDEN]
-            if x == 1:
-                pygame.draw.line(screen, color, (px, py-20), (px, py), 2)
+            if x == 0:
+                pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
             else:
-                pygame.draw.line(screen, color, (px-20, py), (px, py), 2)
+                pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
 
         # 
-        if not walls:
+        if not wallList:
             score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
             screen.blit(score_surface, (50, num_rows*22))
         
