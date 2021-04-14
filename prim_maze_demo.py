@@ -78,7 +78,7 @@ use_font = pygame.font.Font("FONT.TTF", 16)
 #draw_grid(2, DIAMOND, (128, 128, 128))
 # 背景
 background=pygame.surface.Surface(size).convert()
-background.fill(COLOR[COLOR_BLUE])
+background.fill(COLOR[COLOR_BLACK])
 
 # 时间
 clock = pygame.time.Clock()
@@ -92,7 +92,7 @@ def prim_maze_demo(rows, cols):
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ ['|','-'] for i in range(cols+1)]for i in range(rows+1)]
+    wall=[[ [1,1] for i in range(cols+1)]for i in range(rows+1)]
     # 已访问标记
     way=[[ 0 for i in range(cols)]for i in range(rows)]
     # 设置起点
@@ -103,8 +103,8 @@ def prim_maze_demo(rows, cols):
     way[r][c]=1
     # 墙列表
     walllist=[]
-    walllist.append((r+1,c,'-'))
-    walllist.append((r,c+1,'|'))
+    walllist.append((r+1,c,1))
+    walllist.append((r,c+1,0))
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -116,7 +116,7 @@ def prim_maze_demo(rows, cols):
             rr,cc,dd=r,c,d
             # 移除墙
             walllist.remove((r,c,d))
-            if d == '|':
+            if d == 0:
                 # 如果这面墙分隔的两个单元格只有一个单元格被访问过，那么：
                 if c > 0 and (not way[r][c-1] == way[r][c] ):
                     #1.把墙打通，将未访问的单元格标记成为迷宫的一部分
@@ -129,18 +129,18 @@ def prim_maze_demo(rows, cols):
                     way[r][c]=1
                     #2.将单元格相邻的墙加入到墙列表中
                     # 上
-                    if r > 0 and wall[r][c][1] == '-':
-                        walllist.append((r,c,'-'))
+                    if r > 0 and wall[r][c][1] == 1:
+                        walllist.append((r,c,1))
                     # 下
-                    if r+1 < rows and wall[r+1][c][1] == '-':
-                        walllist.append((r+1,c,'-'))
+                    if r+1 < rows and wall[r+1][c][1] == 1:
+                        walllist.append((r+1,c,1))
                     # 左
-                    if c > 0 and wall[r][c][0] == '|':
-                        walllist.append((r,c,'|'))
+                    if c > 0 and wall[r][c][0] == 1:
+                        walllist.append((r,c,0))
                     # 右
-                    if c+1 < cols and wall[r][c+1][0] == '|':
-                        walllist.append((r,c+1,'|'))
-            elif d == '-':
+                    if c+1 < cols and wall[r][c+1][0] == 1:
+                        walllist.append((r,c+1,0))
+            elif d == 1:
                 # 如果这面墙分隔的两个单元格只有一个单元格被访问过，那么：
                 if r > 0 and ( (not way[r-1][c]) == way[r][c] ):
                     #1.把墙打通，将未访问的单元格标记成为迷宫的一部分
@@ -153,23 +153,23 @@ def prim_maze_demo(rows, cols):
                     way[r][c]=1
                     #2.将单元格相邻的墙加入到墙列表中
                     # 上
-                    if r > 0 and wall[r][c][1] == '-':
-                        walllist.append((r,c,'-'))
+                    if r > 0 and wall[r][c][1] == 1:
+                        walllist.append((r,c,1))
                     # 下
-                    if r + 1 < rows and wall[r+1][c][1] == '-':
-                        walllist.append((r+1,c,'-'))
+                    if r + 1 < rows and wall[r+1][c][1] == 1:
+                        walllist.append((r+1,c,1))
                     # 左
-                    if c > 0 and wall[r][c][0] == '|':
-                        walllist.append((r,c,'|'))
+                    if c > 0 and wall[r][c][0] == 1:
+                        walllist.append((r,c,0))
                     # 右
-                    if c + 1 < cols and wall[r][c+1][0] == '|':
-                        walllist.append((r,c+1,'|'))
+                    if c + 1 < cols and wall[r][c+1][0] == 1:
+                        walllist.append((r,c+1,0))
             #2.如果墙两面的单元格都已经被访问过，那就从列表里移除这面墙
             for rrr1, ccc1, ddd1 in walllist:
-                if ddd1 == '|':
+                if ddd1 == 0:
                     if ccc1 > 0 and way[rrr1][ccc1-1] == 1 and way[rrr1][ccc1] == 1:
                         walllist.remove((rrr1,ccc1,ddd1))
-                elif ddd1 == '-':
+                elif ddd1 == 1:
                     if rrr1 > 0 and way[rrr1-1][ccc1] == 1 and way[rrr1][ccc1] == 1:
                         walllist.remove((rrr1,ccc1,ddd1))
 
@@ -200,7 +200,7 @@ def prim_maze_demo(rows, cols):
         for rrr,ccc,ddd in walllist:
             px,py=1 + (ccc) * DIAMOND_SIZE[0], 1 + (rrr) * DIAMOND_SIZE[1]
             color = (255,50,255)
-            if ddd == '|':
+            if ddd == 0:
                 pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
             else:
                 pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
@@ -208,7 +208,7 @@ def prim_maze_demo(rows, cols):
         if walllist:
             px,py=1 + (cc) * DIAMOND_SIZE[0], 1 + (rr) * DIAMOND_SIZE[1]
             color = (255,215,0)
-            if dd == '|':
+            if dd == 0:
                 pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
             else:
                 pygame.draw.line(screen, color, (px, py), (px+20, py), 2)
