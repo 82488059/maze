@@ -29,7 +29,7 @@ def kruskal_maze(rows, cols):
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
+    wall=[[ [0,0] for i in range(cols)]for i in range(rows)]
     # 设置起点
     r=0
     c=0

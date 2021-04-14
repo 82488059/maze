@@ -67,11 +67,8 @@ def draw_wall(lw, surface, rgb_color):
     return
 # 字体
 use_font = pygame.font.Font("FONT.TTF", 16)
-# 行列
-num_cols=30 #
-num_rows=20 #
 # 背景
-background=pygame.surface.Surface(((num_cols ) * DIAMOND_SIZE[0] + 2 , (num_rows ) * DIAMOND_SIZE[1] + 2)).convert()
+background=pygame.surface.Surface(size).convert()
 background.fill(COLOR[COLOR_BLUE])
 # 时间
 clock = pygame.time.Clock()

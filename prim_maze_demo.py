@@ -22,15 +22,6 @@ import pygame
 pygame.init()  # 初始化pygame
 size = width, height = 800, 600  # 设置窗口大小
 screen = pygame.display.set_mode(size)  # 显示窗口
-# 行列
-num_cols=30 #
-num_rows=20 #
-
-# 墙 0表示通路 |竖墙 -横墙
-wall=[[ ['|','-'] for i in range(num_cols+1)]for i in range(num_rows+1)]
-
-# 已访问标记
-way=[[ 0 for i in range(num_cols)]for i in range(num_rows)]
 # 颜色
 diamond_color_size = 7
 COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_YELLOW, COLOR_BLACK, COLOR_GREY, COLOR_NO_DIAMOND = list(range(
@@ -86,27 +77,24 @@ def draw_wall(lw, surface, rgb_color):
 use_font = pygame.font.Font("FONT.TTF", 16)
 #draw_grid(2, DIAMOND, (128, 128, 128))
 # 背景
-background=pygame.surface.Surface(((num_cols ) * DIAMOND_SIZE[0] + 2 , (num_rows ) * DIAMOND_SIZE[1] + 2)).convert()
-background.fill(COLOR[2])
+background=pygame.surface.Surface(size).convert()
+background.fill(COLOR[COLOR_BLUE])
 
 # 时间
 clock = pygame.time.Clock()
 
 
 # 随机墙
-def prim_maze_demo():
-    # [0]表示格子访问标记
-    grids=[[ [0] for i in range(cols)]for i in range(rows)]
+def prim_maze_demo(rows, cols):
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
     # wall[x][y][0]竖墙wall[x][y][1]横墙
     # 墙 [0]表示格子访问标记，左[1]竖墙，上[2]横墙，最右边竖墙和最下边横墙没有记录。
     # (最左和最上墙不能打通，r,c右和r,c+1左共用墙。r,c和r+1,c共用横墙)
     # 初始化全为墙
-    wall=[[ [0,0] for i in range(num_cols)]for i in range(num_rows)]
-
-    global way
-    global wall
+    wall=[[ ['|','-'] for i in range(cols+1)]for i in range(rows+1)]
+    # 已访问标记
+    way=[[ 0 for i in range(cols)]for i in range(rows)]
     # 设置起点
     r=0
     c=0
@@ -117,7 +105,6 @@ def prim_maze_demo():
     walllist=[]
     walllist.append((r+1,c,'-'))
     walllist.append((r,c+1,'|'))
-
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -145,13 +132,13 @@ def prim_maze_demo():
                     if r > 0 and wall[r][c][1] == '-':
                         walllist.append((r,c,'-'))
                     # 下
-                    if r+1 < num_rows and wall[r+1][c][1] == '-':
+                    if r+1 < rows and wall[r+1][c][1] == '-':
                         walllist.append((r+1,c,'-'))
                     # 左
                     if c > 0 and wall[r][c][0] == '|':
                         walllist.append((r,c,'|'))
                     # 右
-                    if c+1 < num_cols and wall[r][c+1][0] == '|':
+                    if c+1 < cols and wall[r][c+1][0] == '|':
                         walllist.append((r,c+1,'|'))
             elif d == '-':
                 # 如果这面墙分隔的两个单元格只有一个单元格被访问过，那么：
@@ -169,13 +156,13 @@ def prim_maze_demo():
                     if r > 0 and wall[r][c][1] == '-':
                         walllist.append((r,c,'-'))
                     # 下
-                    if r + 1 < num_rows and wall[r+1][c][1] == '-':
+                    if r + 1 < rows and wall[r+1][c][1] == '-':
                         walllist.append((r+1,c,'-'))
                     # 左
                     if c > 0 and wall[r][c][0] == '|':
                         walllist.append((r,c,'|'))
                     # 右
-                    if c + 1 < num_cols and wall[r][c+1][0] == '|':
+                    if c + 1 < cols and wall[r][c+1][0] == '|':
                         walllist.append((r,c+1,'|'))
             #2.如果墙两面的单元格都已经被访问过，那就从列表里移除这面墙
             for rrr1, ccc1, ddd1 in walllist:
@@ -188,8 +175,8 @@ def prim_maze_demo():
 
         screen.blit(background, (0, 0))
         # 画格子
-        for x in range(num_cols):
-            for y in range(num_rows):
+        for x in range(cols):
+            for y in range(rows):
                 px,py=1 + (x) * DIAMOND_SIZE[0], 1 + (y) * DIAMOND_SIZE[1]
                 # 标记走过的
                 if way[y][x]:
@@ -198,10 +185,10 @@ def prim_maze_demo():
                     screen.blit(DIAMOND_GREY, (px, py))
 
         # 画外墙
-        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*num_cols+1, 20*num_rows+1), 2)
+        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*cols+1, 20*rows+1), 2)
         # 画没打通的墙
-        for x in range( num_cols):
-            for y in range(num_rows):
+        for x in range( cols):
+            for y in range(rows):
                 px,py=1 + (x) * DIAMOND_SIZE[0], 1 + (y) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_BLACK]
                 if wall[y][x][0]:
@@ -228,7 +215,7 @@ def prim_maze_demo():
         # 
         if not walllist:
             score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
-            screen.blit(score_surface, (50, num_rows*22))
+            screen.blit(score_surface, (50, rows*22))
         
         time_passed = clock.tick(30)
 
@@ -240,4 +227,4 @@ def prim_maze_demo():
 # main
 if __name__ == "__main__":
     '''main'''
-    prim_maze_demo()
+    prim_maze_demo(20, 30)

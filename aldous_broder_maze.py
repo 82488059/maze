@@ -1,7 +1,6 @@
 #!/usr/bin/python3.7
 # -*- coding: utf-8 -*-
 import random
-import pygame
 
 #Aldous-Broder algorithm
 #The Aldous-Broder algorithm also produces uniform spanning trees.

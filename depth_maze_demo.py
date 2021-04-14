@@ -196,8 +196,6 @@ def depth_maze_demo(rows, cols):
                 r, c = history.pop()
         # 
         screen.blit(background, (0, 0))
-        
-        #screen.blit(background, (x, y))
         # 格子
         for x in range(cols):
             for y in range(rows):
@@ -210,7 +208,6 @@ def depth_maze_demo(rows, cols):
         
         px,py=1 + c * DIAMOND_SIZE[0], 1 + r * DIAMOND_SIZE[1]
         screen.blit(DIAMOND_RED, (px, py))
-
         # 墙
         pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*cols+1, 20*rows+1), 2)
         # 
@@ -221,7 +218,6 @@ def depth_maze_demo(rows, cols):
                     pygame.draw.line(screen, COLOR[COLOR_BLACK], (px, py), (px, py+20), 2)
                 if not wall[y][x][1]:
                     pygame.draw.line(screen, COLOR[COLOR_BLACK], (px, py), (px+20, py), 2)
-                
         if not history:
             score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_BLUE])
             screen.blit(score_surface, (cols*22/10, rows*22))
