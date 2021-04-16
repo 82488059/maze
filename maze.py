@@ -308,7 +308,6 @@ def prim_maze(rows, cols):
     while walllist:
         # 随机选一个墙
         r, c, d = random.choice(walllist)
-        rr,cc,dd=r,c,d
         # 移除墙
         walllist.remove((r,c,d))
         if d == VERTICAL:

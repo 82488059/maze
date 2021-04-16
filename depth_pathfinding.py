@@ -46,6 +46,9 @@ use_font = pygame.font.Font("FONT.TTF", 16)
 # 背景
 background=pygame.surface.Surface(size).convert()
 background.fill(COLOR[COLOR_BLACK])
+# 文字
+score_surface = use_font.render("找到终点", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
+            
 # 时间
 clock = pygame.time.Clock()
 
@@ -118,10 +121,10 @@ def depth_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
 # 深度优先寻路演示代码
 def depth_pathfinding_demo(rows, cols):
     #walls = maze.aldous_broder_maze(rows, cols)
-    #walls = maze.depth_maze(rows, cols)
+    walls = maze.depth_maze(rows, cols)
     #walls = maze.kruskal_maze(rows, cols)
     #walls = maze.prim_maze(rows, cols)
-    walls = maze.wilson_maze(rows, cols)
+    #walls = maze.wilson_maze(rows, cols)
     # fpath = depth_pathfinding(rows,cols, walls)
     POSX=40
     POSY=40
@@ -220,7 +223,7 @@ def depth_pathfinding_demo(rows, cols):
                 #    pygame.draw.line(screen, color3, (px, py), (px+20, py), 2)
         # 
         if findEndPoint:
-            score_surface = use_font.render("找到终点", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
+            # score_surface = use_font.render("找到终点", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
             screen.blit(score_surface, (POSX+50, POSY+rows*22))
         time_passed = clock.tick(30)
 
