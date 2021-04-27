@@ -69,25 +69,9 @@ INFINITE = maze.INFINITE # 无穷远
 
 INFINITE = maze.INFINITE # 无穷远
 
-# Sample algorithm
-
-
-# This is a fairly simple and easy-to-understand pathfinding algorithm for tile-based maps. To start off, you have a map, a start coordinate and a destination coordinate. The map will look like this, X being walls, S being the start, O being the finish and _ being open spaces, the numbers along the top and right edges are the column and row numbers:
-
-# First, create a list of coordinates, which we will use as a queue. The queue will be initialized with one coordinate, the end coordinate. Each coordinate will also have a counter variable attached (the purpose of this will soon become evident).
-# Then, go through every element in the queue, including new elements added to the end over the course of the algorithm, and for each element, do the following:
-# 1.Create a list of the four adjacent cells, with a counter variable of the current element's counter variable + 1
-# 2.Check all cells in each list for the following two conditions:
-#   1.If the cell is a wall, remove it from the list
-#   2.If there is an element in the main list with the same coordinate, remove it from the cells list
-# 3.Add all remaining cells in the list to the end of the main list
-# 4.Go to the next item in the list
-
-# 采样算法
-
 
 # Sample algorithm
-def sample_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
+def multipath_maze(rows, cols, walls, startPoint=(0,0), endPoint=None):
     # walls = depth_maze.depth_maze(rows, cols)
     # 初始化未访问
     grids=[[ INFINITE for i in range(cols)]for j in range(rows)]
@@ -104,19 +88,17 @@ def sample_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
 
     # 
     mainList=[] # 主路径
-    pathList=[(r,c)] # 路径
+    pathList=[(r,c,0)] # 路径
     grids[r][c]=0 # 标记已经到过格子距离
-
     while not findPath:
-        if not findEndPoint:        
+        # 当存在未访问细胞时:
+        if  pathList and not findEndPoint:        
             nextList = [] # 下一步
             for node in pathList:
-                r, c = node
-                l = grids[r][c]
+                r, c, l = node
                 if (r,c) == stopPoint:
                     # 找到终点
                     grids[r][c] = l
-                    pathList=[]
                     findEndPoint=True
                     break
                 # 可以到达的位置
@@ -124,33 +106,28 @@ def sample_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
                     # move = 'u'
                     nr=r-1
                     nc=c
-                    if (nr,nc) not in nextList:
-                        nextList.append((nr,nc))
-                        grids[nr][nc] = l+1
+                    nextList.append((nr,nc,l+1))
                 if c>0 and NOWALL == walls[r][c][0] and INFINITE == grids[r][c-1]:
                     # move = 'l'
                     nr=r
                     nc=c-1
-                    if (nr,nc) not in nextList:
-                        nextList.append((nr,nc))
-                        grids[nr][nc] = l+1
+                    nextList.append((nr,nc,l+1))
                 if c<cols-1 and NOWALL == walls[r][c+1][0] and INFINITE == grids[r][c+1] :
                     # move='r'
                     nr=r
                     nc=c+1
-                    if (nr,nc) not in nextList:
-                        nextList.append((nr,nc))
-                        grids[nr][nc] = l+1
+                    nextList.append((nr,nc,l+1))
                 if r<rows-1 and NOWALL == walls[r+1][c][1] and INFINITE == grids[r+1][c] :
                     # move='d'
                     nr=r+1
                     nc=c
-                    if (nr,nc) not in nextList:
-                        nextList.append((nr,nc))
-                        grids[nr][nc] = l+1
+                    nextList.append((nr,nc,l+1))
+                if  INFINITE == grids[r][c]:
+                    grids[r][c] = l
             # 下一圈
             pathList = nextList
         elif findEndPoint and not findPath:
+            ""
             mainList.append((r,c))
             l = grids[r][c]
             nl=l-1
@@ -159,30 +136,71 @@ def sample_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
                 # move = 'u'
                 nr=r-1
                 nc=c
+                nextList.append((nr,nc,l+1))
             if c>0 and NOWALL == walls[r][c][0] and nl == grids[r][c-1]:
                 # move = 'l'
                 nr=r
                 nc=c-1
-                nextList.append((nr,nc))
+                nextList.append((nr,nc,l+1))
             if c<cols-1 and NOWALL == walls[r][c+1][0] and nl == grids[r][c+1] :
                 # move='r'
                 nr=r
                 nc=c+1
+                nextList.append((nr,nc,l+1))
             if r<rows-1 and NOWALL == walls[r+1][c][1] and nl == grids[r+1][c] :
                 # move='d'
                 nr=r+1
                 nc=c
-            # 找到起点
+                nextList.append((nr,nc,l+1))
             if 0 == nl:
                 mainList.append((nr,nc))
                 findPath = True
+                break
             r,c=nr,nc
 
     return mainList, grids
 
 
+# 
+def FindNext(pathList, walls, grids, rows, cols):
+    nextList = [] # 下一步
+    for node in pathList:
+        r, c = node
+        l = grids[r][c]
+        nl=l+1
+        # 可以到达的位置
+        if r>0 and NOWALL == walls[r][c][1] and INFINITE == grids[r-1][c]:
+            # move = 'u'
+            nr=r-1
+            nc=c
+            if (nr,nc) not in nextList:
+                nextList.append((nr,nc))
+                grids[nr][nc] = l+1
+        if c>0 and NOWALL == walls[r][c][0] and INFINITE == grids[r][c-1]:
+            # move = 'l'
+            nr=r
+            nc=c-1
+            if (nr,nc) not in nextList:
+                nextList.append((nr,nc))
+                grids[nr][nc] = l+1
+        if c<cols-1 and NOWALL == walls[r][c+1][0] and INFINITE == grids[r][c+1] :
+            # move='r'
+            nr=r
+            nc=c+1
+            if (nr,nc) not in nextList:
+                nextList.append((nr,nc))
+                grids[nr][nc] = l+1
+        if r<rows-1 and NOWALL == walls[r+1][c][1] and INFINITE == grids[r+1][c] :
+            # move='d'
+            nr=r+1
+            nc=c
+            if (nr,nc) not in nextList:
+                nextList.append((nr,nc))
+                grids[nr][nc] = l+1
+    return nextList
+
 # Sample algorithm
-def sample_pathfinding_demo(rows, cols):
+def multipath_maze_demo(rows, cols):
     #walls = maze.aldous_broder_maze(rows, cols)
     #walls = maze.depth_maze(rows, cols)
     #walls = maze.kruskal_maze(rows, cols)
@@ -207,10 +225,15 @@ def sample_pathfinding_demo(rows, cols):
     mainList=[] # 主路径
     pathList=[(r,c)] # 路径
     grids[r][c]=0 # 标记已经到过格子距离
-    fpath, grids = sample_pathfinding(rows,cols,walls)
-    mainList = fpath
-    findEndPoint = True
-    findPath = True
+
+    beginList=[]
+    endList=[]
+    # 没有访问过的格子
+    notusegrids = [] 
+    for tr in range(rows):
+        for tc in range(cols):
+            notusegrids.append((tr,tc))
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -328,7 +351,6 @@ def sample_pathfinding_demo(rows, cols):
             for ry in range(rows):
                 px,py=POSX + 1 + (cx) * DIAMOND_SIZE[0], POSY + 1 + (ry) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_BLACK]
-                color2 = COLOR[COLOR_RED]
                 if maze.WALL == walls[ry][cx][0]:
                     pygame.draw.line(screen, color, (px, py), (px, py+20), 2)
                 if maze.WALL == walls[ry][cx][1]:
@@ -336,6 +358,7 @@ def sample_pathfinding_demo(rows, cols):
         # 
         if findEndPoint:
             screen.blit(score_surface, (POSX+50, POSY+rows*22))
+
         time_passed = clock.tick(25)
 
         pygame.display.update()
@@ -346,4 +369,4 @@ def sample_pathfinding_demo(rows, cols):
 # main
 if __name__ == "__main__":
     '''main'''
-    sample_pathfinding_demo(20, 30)
+    multipath_maze_demo(20, 30)
