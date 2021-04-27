@@ -11,7 +11,7 @@ VISIT=1 # 到访过
 NOVISIT=0 # 没到过
 VERTICAL = 0 # 垂直的
 HORIZONTAL = 1# 水平的
-
+INFINITE = -1 # infinite distance 无穷远
 
 #Aldous-Broder algorithm
 #The Aldous-Broder algorithm also produces uniform spanning trees.
@@ -476,3 +476,5 @@ def wilson_maze(rows, cols):
 if __name__ == "__main__":
     '''main'''
     aldous_broder_maze(20, 30)
+
+

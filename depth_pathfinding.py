@@ -55,12 +55,16 @@ clock = pygame.time.Clock()
 ##############################################
 #   格子访问标记x,y,0，右墙x,y,1，下墙x,y,2
 ##############################################
-WALL=0  # 有墙
-NOWALL=1 # 无墙
-VISIT=1 # 到访过
-NOVISIT=0 # 没到过
-VERTICAL = 0 # 垂直的
-HORIZONTAL = 1# 水平的
+#标记 
+NOWALL=maze.NOWALL # 无墙
+WALL=maze.WALL  # 有墙
+WALL2=maze.WALL2  # 有墙
+
+VISIT=maze.VISIT # 到访过
+NOVISIT=maze.NOVISIT # 没到过
+VERTICAL = maze.VERTICAL # 垂直的
+HORIZONTAL = maze.HORIZONTAL# 水平的
+INFINITE = maze.INFINITE # 无穷远
 
 # 
 
