@@ -104,17 +104,19 @@ def sample_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
 
     # 
     mainList=[] # 主路径
-    pathList=[(r,c,0)] # 路径
+    pathList=[(r,c)] # 路径
     grids[r][c]=0 # 标记已经到过格子距离
+
     while not findPath:
-        # 当存在未访问细胞时:
-        if  pathList and not findEndPoint:        
+        if not findEndPoint:        
             nextList = [] # 下一步
             for node in pathList:
-                r, c, l = node
+                r, c = node
+                l = grids[r][c]
                 if (r,c) == stopPoint:
                     # 找到终点
                     grids[r][c] = l
+                    pathList=[]
                     findEndPoint=True
                     break
                 # 可以到达的位置
@@ -122,30 +124,33 @@ def sample_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
                     # move = 'u'
                     nr=r-1
                     nc=c
-                    nextList.append((nr,nc,l+1))
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
                 if c>0 and NOWALL == walls[r][c][0] and INFINITE == grids[r][c-1]:
                     # move = 'l'
                     nr=r
                     nc=c-1
-                    nextList.append((nr,nc,l+1))
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
                 if c<cols-1 and NOWALL == walls[r][c+1][0] and INFINITE == grids[r][c+1] :
                     # move='r'
                     nr=r
                     nc=c+1
-                    nextList.append((nr,nc,l+1))
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
                 if r<rows-1 and NOWALL == walls[r+1][c][1] and INFINITE == grids[r+1][c] :
                     # move='d'
                     nr=r+1
                     nc=c
-                    nextList.append((nr,nc,l+1))
-                if nextList:
-                    # 后面有可到达的路径，记录当前点与起点的距离
-                    grids[r][c] = l
-                    # 加入主路径
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
             # 下一圈
             pathList = nextList
         elif findEndPoint and not findPath:
-            ""
             mainList.append((r,c))
             l = grids[r][c]
             nl=l-1
@@ -154,26 +159,23 @@ def sample_pathfinding(rows, cols, walls, startPoint=(0,0), endPoint=None):
                 # move = 'u'
                 nr=r-1
                 nc=c
-                nextList.append((nr,nc,l+1))
             if c>0 and NOWALL == walls[r][c][0] and nl == grids[r][c-1]:
                 # move = 'l'
                 nr=r
                 nc=c-1
-                nextList.append((nr,nc,l+1))
+                nextList.append((nr,nc))
             if c<cols-1 and NOWALL == walls[r][c+1][0] and nl == grids[r][c+1] :
                 # move='r'
                 nr=r
                 nc=c+1
-                nextList.append((nr,nc,l+1))
             if r<rows-1 and NOWALL == walls[r+1][c][1] and nl == grids[r+1][c] :
                 # move='d'
                 nr=r+1
                 nc=c
-                nextList.append((nr,nc,l+1))
+            # 找到起点
             if 0 == nl:
                 mainList.append((nr,nc))
                 findPath = True
-                break
             r,c=nr,nc
 
     return mainList, grids
@@ -185,14 +187,8 @@ def sample_pathfinding_demo(rows, cols):
     #walls = maze.depth_maze(rows, cols)
     #walls = maze.kruskal_maze(rows, cols)
     #walls = maze.prim_maze(rows, cols)
+    #walls = maze.wilson_maze(rows, cols)
     walls = maze.wilson_maze(rows, cols)
-    #walls2 = maze.wilson_maze(rows,cols)
-    #for tr in range(rows):
-    #    for tc in range(cols):
-    #        if NOWALL == walls[tr][tc][0] or NOWALL == walls2[tr][tc][0]:
-    #            walls[tr][tc][0] = NOWALL           
-    #        if NOWALL == walls[tr][tc][1] or NOWALL == walls2[tr][tc][1]:
-    #            walls[tr][tc][1] = NOWALL   
     POSX=40
     POSY=40
     # 初始化未访问
@@ -209,23 +205,21 @@ def sample_pathfinding_demo(rows, cols):
     stopPoint=(rows-1,cols-1)
     # 
     mainList=[] # 主路径
-    pathList=[(r,c,0)] # 路径
+    pathList=[(r,c)] # 路径
     grids[r][c]=0 # 标记已经到过格子距离
-
-    #fpath, grids = sample_pathfinding(rows,cols,walls)
-    #mainList = fpath
-    #findEndPoint = True
-    #findPath = True
-
+    fpath, grids = sample_pathfinding(rows,cols,walls)
+    mainList = fpath
+    findEndPoint = True
+    findPath = True
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-        # 当存在未访问细胞时:
-        if  pathList and not findEndPoint:        
+        if  not findEndPoint:        
             nextList = [] # 下一步
             for node in pathList:
-                r, c, l = node
+                r, c = node
+                l = grids[r][c]
                 if (r,c) == stopPoint:
                     # 找到终点
                     grids[r][c] = l
@@ -237,34 +231,33 @@ def sample_pathfinding_demo(rows, cols):
                     # move = 'u'
                     nr=r-1
                     nc=c
-                    if (nr,nc,l+1) not in nextList:
-                        nextList.append((nr,nc,l+1))
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
                 if c>0 and NOWALL == walls[r][c][0] and INFINITE == grids[r][c-1]:
                     # move = 'l'
                     nr=r
                     nc=c-1
-                    if (nr,nc,l+1) not in nextList:
-                        nextList.append((nr,nc,l+1))
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
                 if c<cols-1 and NOWALL == walls[r][c+1][0] and INFINITE == grids[r][c+1] :
                     # move='r'
                     nr=r
                     nc=c+1
-                    if (nr,nc,l+1) not in nextList:
-                        nextList.append((nr,nc,l+1))
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
                 if r<rows-1 and NOWALL == walls[r+1][c][1] and INFINITE == grids[r+1][c] :
                     # move='d'
                     nr=r+1
                     nc=c
-                    if (nr,nc,l+1) not in nextList:
-                        nextList.append((nr,nc,l+1))
-                if nextList:
-                    # 后面有可到达的路径，记录当前点与起点的距离
-                    grids[r][c] = l
-                    # 加入主路径
+                    if (nr,nc) not in nextList:
+                        nextList.append((nr,nc))
+                        grids[nr][nc] = l+1
             # 下一圈
             pathList = nextList
         elif findEndPoint and not findPath:
-            ""
             mainList.append((r,c))
             l = grids[r][c]
             nl=l-1
@@ -273,22 +266,20 @@ def sample_pathfinding_demo(rows, cols):
                 # move = 'u'
                 nr=r-1
                 nc=c
-                nextList.append((nr,nc,l+1))
             if c>0 and NOWALL == walls[r][c][0] and nl == grids[r][c-1]:
                 # move = 'l'
                 nr=r
                 nc=c-1
-                nextList.append((nr,nc,l+1))
+                nextList.append((nr,nc))
             if c<cols-1 and NOWALL == walls[r][c+1][0] and nl == grids[r][c+1] :
                 # move='r'
                 nr=r
                 nc=c+1
-                nextList.append((nr,nc,l+1))
             if r<rows-1 and NOWALL == walls[r+1][c][1] and nl == grids[r+1][c] :
                 # move='d'
                 nr=r+1
                 nc=c
-                nextList.append((nr,nc,l+1))
+            # 找到起点
             if 0 == nl:
                 mainList.append((nr,nc))
                 findPath = True
