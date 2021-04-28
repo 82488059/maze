@@ -207,10 +207,10 @@ def sample_pathfinding_demo(rows, cols):
     mainList=[] # 主路径
     pathList=[(r,c)] # 路径
     grids[r][c]=0 # 标记已经到过格子距离
-    fpath, grids = sample_pathfinding(rows,cols,walls)
-    mainList = fpath
-    findEndPoint = True
-    findPath = True
+    #fpath, grids = sample_pathfinding(rows,cols,walls)
+    #mainList = fpath
+    #findEndPoint = True
+    #findPath = True
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -266,16 +266,16 @@ def sample_pathfinding_demo(rows, cols):
                 # move = 'u'
                 nr=r-1
                 nc=c
-            if c>0 and NOWALL == walls[r][c][0] and nl == grids[r][c-1]:
+            elif c>0 and NOWALL == walls[r][c][0] and nl == grids[r][c-1]:
                 # move = 'l'
                 nr=r
                 nc=c-1
                 nextList.append((nr,nc))
-            if c<cols-1 and NOWALL == walls[r][c+1][0] and nl == grids[r][c+1] :
+            elif c<cols-1 and NOWALL == walls[r][c+1][0] and nl == grids[r][c+1] :
                 # move='r'
                 nr=r
                 nc=c+1
-            if r<rows-1 and NOWALL == walls[r+1][c][1] and nl == grids[r+1][c] :
+            elif r<rows-1 and NOWALL == walls[r+1][c][1] and nl == grids[r+1][c] :
                 # move='d'
                 nr=r+1
                 nc=c

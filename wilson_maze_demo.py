@@ -62,10 +62,6 @@ DIAMOND_GREY.fill(COLOR[COLOR_GREY])
 
 # 字体
 use_font = pygame.font.Font("FONT.TTF", 16)
-# 行列
-num_cols=30 #
-num_rows=20 #
-# 背景
 # 背景
 background=pygame.surface.Surface(size).convert()
 background.fill(COLOR[COLOR_BLACK])
@@ -113,9 +109,9 @@ def wilson_maze_demo(rows, cols):
     for tr in range(rows):
         for tc in range(cols):
             notusegrids.append((tr,tc))
+    # 标记迷宫
     r,c = random.choice(notusegrids)
     notusegrids.remove((r,c))
-    # 标记迷宫
     grids[r][c]=VISIT
     # 
     r,c = notusegrids[0]
@@ -191,8 +187,8 @@ def wilson_maze_demo(rows, cols):
 
         screen.blit(background, (0, 0))
         # 格子
-        for cx in range(num_cols):
-            for ry in range(num_rows):
+        for cx in range(cols):
+            for ry in range(rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 # 标记访问过的格子
                 if NOVISIT == grids[ry][cx]:
@@ -205,10 +201,10 @@ def wilson_maze_demo(rows, cols):
             screen.blit(DIAMOND_YELLOW, (px, py))
 
         # 画外墙
-        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*num_cols+1, 20*num_rows+1), 2)
+        pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*cols+1, 20*rows+1), 2)
         # 画没打通的墙
-        for cx in range( num_cols):
-            for ry in range(num_rows):
+        for cx in range( cols):
+            for ry in range(rows):
                 px,py=1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
                 color = COLOR[COLOR_BLACK]
                 if WALL == wall[ry][cx][0]:
@@ -230,7 +226,7 @@ def wilson_maze_demo(rows, cols):
         # 
         if not notusegrids:
             score_surface = use_font.render("生成完成！", True, COLOR[COLOR_BLACK], COLOR[COLOR_GREY])
-            screen.blit(score_surface, (50, num_rows*22))
+            screen.blit(score_surface, (50, rows*22))
         
         time_passed = clock.tick(30)
 
@@ -242,4 +238,4 @@ def wilson_maze_demo(rows, cols):
 # main
 if __name__ == "__main__":
     '''main'''
-    wilson_maze_demo(20, 30)
+    wilson_maze_demo(5, 6)
