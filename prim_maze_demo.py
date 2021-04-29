@@ -52,8 +52,8 @@ DIAMOND_RED.fill(COLOR[COLOR_RED])
 DIAMOND_YELLOW=pygame.surface.Surface(DIAMOND_SIZE).convert()
 DIAMOND_YELLOW.fill(COLOR[COLOR_YELLOW])
 # 灰的格子 
-DIAMOND_GREY=pygame.surface.Surface(DIAMOND_SIZE).convert()
-DIAMOND_GREY.fill(COLOR[COLOR_GREY])
+DIAMOND_GRAY=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_GRAY.fill(COLOR[COLOR_GREY])
 # 字体
 use_font = pygame.font.Font("FONT.TTF", 16)
 # 背景
@@ -170,7 +170,7 @@ def prim_maze_demo(rows, cols):
                 if NOVISIT == way[y][x]:
                     screen.blit(DIAMOND, (px, py))
                 else:
-                    screen.blit(DIAMOND_GREY, (px, py))
+                    screen.blit(DIAMOND_GRAY, (px, py))
 
         # 画外墙
         pygame.draw.rect(screen, COLOR[COLOR_RED], (0, 0, 20*cols+1, 20*rows+1), 2)

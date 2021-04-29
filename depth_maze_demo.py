@@ -63,8 +63,8 @@ DIAMOND_RED.fill(COLOR[COLOR_RED])
 DIAMOND_YELLOW=pygame.surface.Surface(DIAMOND_SIZE).convert()
 DIAMOND_YELLOW.fill(COLOR[COLOR_YELLOW])
 # 灰的格子 
-DIAMOND_GREY=pygame.surface.Surface(DIAMOND_SIZE).convert()
-DIAMOND_GREY.fill(COLOR[COLOR_GREY])
+DIAMOND_GRAY=pygame.surface.Surface(DIAMOND_SIZE).convert()
+DIAMOND_GRAY.fill(COLOR[COLOR_GREY])
 # 
 
 # 访问过的格子 
@@ -162,7 +162,7 @@ def depth_maze_demo(rows, cols):
                 if NOVISIT == way[y][x]:
                     screen.blit(DIAMOND, (px, py))
                 else:
-                    screen.blit(DIAMOND_GREY, (px, py))
+                    screen.blit(DIAMOND_GRAY, (px, py))
         
         px,py=1 + c * DIAMOND_SIZE[0], 1 + r * DIAMOND_SIZE[1]
         screen.blit(DIAMOND_RED, (px, py))
