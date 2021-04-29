@@ -54,7 +54,7 @@ use_font = pygame.font.Font("FONT.TTF", 16)
 use_font12 = pygame.font.Font("FONT.TTF", 12)
 # 背景
 background=pygame.surface.Surface(size).convert()
-background.fill(COLOR[COLOR_BLACK])
+background.fill(COLOR[COLOR_GRAY])
 # 文字
 score_surface = use_font.render("找到终点", True, COLOR[COLOR_BLACK], COLOR[COLOR_FLAXEN])
 # 时间
@@ -113,14 +113,14 @@ def FindNextCircle(startList, walls, grids, rows, cols):
 
 
 # 画方块
-def draw_diamond(r,c, screen, POSX, POSY, diamod):
-    px,py=POSX + 1 + (c) * DIAMOND_SIZE[0], POSY + 1 + (r) * DIAMOND_SIZE[1]
+def draw_diamond(r, c, screen, diamod):
+    px,py= 1 + (c) * DIAMOND_SIZE[0], 1 + (r) * DIAMOND_SIZE[1]
     screen.blit(diamod, (px, py))
     return 
 
 # 画方块和字符串string
-def draw_diamond_and_str(r,c, screen, POSX, POSY, diamod, use_font, string, color, color_back):
-    px,py=POSX + 1 + (c) * DIAMOND_SIZE[0], POSY + 1 + (r) * DIAMOND_SIZE[1]
+def draw_diamond_and_str(r, c, screen, diamod, use_font, string, color, color_back):
+    px,py= 1 + (c) * DIAMOND_SIZE[0], 1 + (r) * DIAMOND_SIZE[1]
     screen.blit(diamod, (px, py))
     distance_surface = use_font.render(string, True, color, color_back)
     screen.blit(distance_surface, (px, py))
@@ -152,6 +152,10 @@ def split_one_maze_demo(walls, grids, startList, endList, startMap, endMap, rows
 
 # Sample algorithm
 def multipath_maze_demo(rows, cols):
+    maze_h = rows * DIAMOND_SIZE[0] + 1
+    maze_w = cols * DIAMOND_SIZE[0] + 1
+    size = (maze_w, maze_h)
+    maze_surface=pygame.surface.Surface(size).convert()
     #walls = maze.aldous_broder_maze(rows, cols)
     #walls = maze.depth_maze(rows, cols)
     #walls = maze.kruskal_maze(rows, cols)
@@ -205,56 +209,48 @@ def multipath_maze_demo(rows, cols):
             findPath
         else:
             findPath
-
+        # 背景
         screen.blit(background, (0, 0))
+        # maze_surface
         # 格子
         for cx in range(cols):
             for ry in range(rows):
-                px,py=POSX + 1 + (cx) * DIAMOND_SIZE[0], POSY + 1 + (ry) * DIAMOND_SIZE[1]
                 # 标记访问过的格子
                 if maze.INFINITE == grids[ry][cx]:
-                    draw_diamond(ry, cx, screen, POSX, POSY, DIAMOND_GRAY)
+                    draw_diamond(ry, cx, maze_surface, DIAMOND_GRAY)
                 else:
                     s = "{}".format(grids[ry][cx])
-                    draw_diamond_and_str(ry, cx, screen, POSX,POSY, DIAMOND_GRAY, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_FLAXEN]) 
+                    draw_diamond_and_str(ry, cx, maze_surface, DIAMOND_GRAY, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_FLAXEN]) 
         # 圈地
         for pos in startMap:
             s = "{}".format(grids[pos[0]][pos[1]])
-            draw_diamond_and_str(pos[0], pos[1], screen, POSX,POSY, DIAMOND_GREEN, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_GREEN])
+            draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_GREEN, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_GREEN])
         for pos in endMap:
             s = "{}".format(grids[pos[0]][pos[1]])
-            draw_diamond_and_str(pos[0], pos[1], screen, POSX,POSY, DIAMOND_YELLOW, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_YELLOW])
+            draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_YELLOW, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_YELLOW])
         # 循环外圈
         if startList and not mainList:
             for pos in startList:
                 s = "{}".format(grids[pos[0]][pos[1]])
-                draw_diamond_and_str(pos[0], pos[1], screen, POSX,POSY, DIAMOND_RED, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_RED])
+                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_RED, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_RED])
             for pos in endList:
                 s = "{}".format(grids[pos[0]][pos[1]])
-                draw_diamond_and_str(pos[0], pos[1], screen, POSX,POSY, DIAMOND_RED, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_RED])
+                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_RED, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_RED])
         # 路径
         if mainList:
             for pos in mainList:
                 s = "{}".format(grids[pos[0]][pos[1]])
-                draw_diamond_and_str(pos[0], pos[1], screen, POSX,POSY, DIAMOND_YELLOW, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_YELLOW])
+                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_YELLOW, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_YELLOW])
             # r,c
-            px,py=POSX + 1 + (c) * DIAMOND_SIZE[0], POSY + 1 + (r) * DIAMOND_SIZE[1]
-            screen.blit(DIAMOND_GREEN, (px, py))
-            s = "{}".format(grids[r][c])
-            distance_surface = use_font12.render(s, True, COLOR[COLOR_BLACK], COLOR[COLOR_GREEN])
-            screen.blit(distance_surface, (px, py))
-
+            s = "{}".format(grids[pos[0]][pos[1]])
+            draw_diamond_and_str(r, c, maze_surface, DIAMOND_GREEN, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_GREEN])
         # 画外墙
-        pygame.draw.rect(screen, COLOR[COLOR_RED], (POSX + 0, POSY + 0, DIAMOND_LEN*cols+1, DIAMOND_LEN*rows+1), 2)
+        pygame.draw.rect(maze_surface, COLOR[COLOR_RED], (0, 0, DIAMOND_LEN*cols+1, DIAMOND_LEN*rows+1), 2)
         # 画没打通的墙
-        for cx in range( cols):
-            for ry in range(rows):
-                px,py=POSX + 1 + (cx) * DIAMOND_SIZE[0], POSY + 1 + (ry) * DIAMOND_SIZE[1]
-                color = COLOR[COLOR_BLACK]
-                if maze.WALL == walls[ry][cx][0]:
-                    pygame.draw.line(screen, color, (px, py), (px, py+DIAMOND_LEN), 2)
-                if maze.WALL == walls[ry][cx][1]:
-                    pygame.draw.line(screen, color, (px, py), (px+DIAMOND_LEN, py), 2)
+        DrawWalls(maze_surface, DIAMOND_SIZE, walls, rows, cols)
+        # 贴maze
+        screen.blit(maze_surface, (POSX, POSY))
+
         # 打印文字提示
         if findEndPoint:
             screen.blit(score_surface, (POSX+50, POSY+rows*22))
@@ -263,6 +259,19 @@ def multipath_maze_demo(rows, cols):
 
         pygame.display.update()
     return 
+
+# 
+def DrawWalls(screen, DIAMOND_SIZE, walls, rows, cols):
+    for cx in range( cols):
+        for ry in range(rows):
+            px,py = 1 + (cx) * DIAMOND_SIZE[0], 1 + (ry) * DIAMOND_SIZE[1]
+            color = COLOR[COLOR_BLACK]
+            if maze.WALL == walls[ry][cx][0]:
+                pygame.draw.line(screen, color, (px, py), (px, py+DIAMOND_LEN), 2)
+            if maze.WALL == walls[ry][cx][1]:
+                pygame.draw.line(screen, color, (px, py), (px+DIAMOND_LEN, py), 2)
+    return 
+
 
 # main
 if __name__ == "__main__":
