@@ -371,7 +371,27 @@ def prim_maze(rows, cols):
 
 
 
-# 随机格子
+
+# We begin the algorithm by initializing the maze with one cell chosen arbitrarily.
+# Then we start at a new cell chosen arbitrarily,# and perform a random walk until we reach a cell already in the maze—however, 
+# if at any point the random walk reaches its own path, forming a loop,
+# we erase the loop from the path before proceeding.
+# When the path reaches the maze, we add it to the maze. 
+# Then we perform another loop-erased random walk from another arbitrary starting cell, 
+# repeating until all cells have been filled.
+
+# This procedure remains unbiased no matter which method we use to arbitrarily choose starting cells.
+#  So we could always choose the first unfilled cell in (say) left-to-right, top-to-bottom order for simplicity.
+
+# 我们任意选择一个单元格开始初始化迷宫算法。
+# 然后我们随机选择一个新单元格，开始执行随机漫步，直到我们到达迷宫中已经存在的单元格，然而，
+# 如果在任意一点随机漫步到达自己的路径，形成一个循环，在继续之前从路径中删除循环。
+# 当路径到达迷宫时，我们将其添加到迷宫中。
+# 然后我们从另一个任意的起始单元执行另一个循环擦除的随机漫步，
+# 重复，直到填充完所有单元格。
+
+# 无论我们使用哪种方法来选择开始单元格，这个过程都是无偏的。
+# 因此，为了简单起见，我们可以按照从左到右、从上到下的顺序选择第一个未填充的单元格。
 def wilson_maze(rows, cols):
     # 一个格子有四堵墙，其中有两面共有，用2个标记就够用。
     # 墙0通路1。x,y是墙的坐标。
@@ -470,6 +490,109 @@ def wilson_maze(rows, cols):
                 c=newc
 
     return wall
+
+# 拆出第二条路
+# 下一圈
+def FindNextCircle(startList, walls, grids, rows, cols):
+    startNextList = [] # 下一步
+    for node in startList:
+        r, c = node
+        l = grids[r][c]
+        # 可以到达的位置
+        if r>0 and NOWALL == walls[r][c][1] and INFINITE == grids[r-1][c]:
+            # move = 'u'
+            nr=r-1
+            nc=c
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = l+1
+        if c>0 and NOWALL == walls[r][c][0] and INFINITE == grids[r][c-1]:
+            # move = 'l'
+            nr=r
+            nc=c-1
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = l+1
+        if c<cols-1 and NOWALL == walls[r][c+1][0] and INFINITE == grids[r][c+1] :
+            # move='r'
+            nr=r
+            nc=c+1
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = l+1
+        if r<rows-1 and NOWALL == walls[r+1][c][1] and INFINITE == grids[r+1][c] :
+            # move='d'
+            nr=r+1
+            nc=c
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = l+1
+    # 下一圈
+    startList.clear()
+    startList.extend(startNextList)
+    return startList
+
+# 拆出第二条路
+# 拆分迷宫
+def split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols):
+    startList = [startPoint]
+    endList = [endPoint]
+    startMap.append(startPoint)
+    endMap.append(endPoint)
+    while startList or endList:
+        split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols)
+    return startMap, endMap
+
+# 拆出第二条路
+# 一步一步执行
+def split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols):
+    # 起点
+    FindNextCircle(startList, walls, grids, rows, cols)
+    startMap+=startList
+    # 终点
+    FindNextCircle(endList, walls, grids, rows, cols)
+    endMap+=endList
+    return startList, endList
+
+# 找到分隔两部分的墙
+def find_partition_walls(walls, startMap, endMap, rows, cols):
+    tmp_grids=[[ 'e' for i in range(cols)]for j in range(rows)]
+    for s in startMap:
+        tmp_grids[s[0]][s[1]] = 's'
+    part = []
+    for r in range(rows):
+        for c in range(cols):
+            if WALL == walls[r][c][0] and c > 0:
+                if tmp_grids[r][c-1] != tmp_grids[r][c]:
+                    part.append((r,c,0))
+            if WALL == walls[r][c][1] and r > 0:
+                if tmp_grids[r-1][c] != tmp_grids[r][c]:
+                    part.append((r,c,1))
+    return part
+
+
+# 拆出第二条路
+def down_wall_maze(walls, rows, cols, startPoint, endPoint):
+    startList=[startPoint]
+    endList=[endPoint]
+    ## 
+    grids=[[ INFINITE for i in range(cols)]for j in range(rows)]
+    grids[startPoint[0]][startPoint[1]]=0 # 标记已经到过格子距离
+    grids[endPoint[0]][endPoint[1]]=0
+    # 
+    startMap=[]
+    endMap=[]
+    startMap += startList
+    endMap += endList
+    # 
+    split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols)
+    # 
+    parts = find_partition_walls(walls, startMap, endMap, rows, cols)
+    down_wall = random.choice(parts)
+    swr, swc, swd = down_wall
+    parts.remove((swr, swc, swd))
+    walls[swr][swc][swd] = NOWALL
+    return walls
 
 
 # main
