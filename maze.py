@@ -532,7 +532,7 @@ def FindNextCircle(startList, walls, grids, rows, cols):
     startList.extend(startNextList)
     return startList
 
-# 拆出第二条路
+
 # 拆分迷宫
 def split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols):
     startList = [startPoint]
@@ -543,7 +543,7 @@ def split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols)
         split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols)
     return startMap, endMap
 
-# 拆出第二条路
+
 # 一步一步执行
 def split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols):
     # 起点

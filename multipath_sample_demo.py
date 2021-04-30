@@ -406,6 +406,9 @@ def multipath_maze_demo(rows, cols):
         # 
         if parts:
             DrawWallList(maze_surface, COLOR[COLOR_RED], DIAMOND_SIZE, parts, rows, cols)
+            # 画拆开第二条路的墙
+            # DrawWallList(maze_surface, COLOR[COLOR_GREEN], DIAMOND_SIZE, [rand_wall], rows, cols)
+            # DrawWallList(maze_surface, COLOR[COLOR_CYAN], DIAMOND_SIZE, [diff_wall], rows, cols)
 
         # 贴maze
         screen.blit(maze_surface, (POSX, POSY))
