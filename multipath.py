@@ -3,7 +3,7 @@
 import random
 import pygame
 import maze
-
+# 
 pygame.init()  # 初始化pygame
 size = width, height = 800, 600  # 设置窗口大小
 screen = pygame.display.set_mode(size)  # 显示窗口
@@ -28,28 +28,19 @@ COLOR = {
 # 格子大小
 DIAMOND_LEN = 20
 DIAMOND_SIZE = (DIAMOND_LEN, DIAMOND_LEN)
-# 蓝格子
-DIAMOND_BULE=pygame.surface.Surface(DIAMOND_SIZE).convert()
-DIAMOND_BULE.fill(COLOR[COLOR_BLUE])
-# 绿格子 
-DIAMOND_GREEN=pygame.surface.Surface(DIAMOND_SIZE).convert()
-DIAMOND_GREEN.fill(COLOR[COLOR_GREEN])
-# 红格子 
-DIAMOND_RED=pygame.surface.Surface(DIAMOND_SIZE).convert()
-DIAMOND_RED.fill(COLOR[COLOR_RED])
-# 黄格子 
-DIAMOND_YELLOW=pygame.surface.Surface(DIAMOND_SIZE).convert()
-DIAMOND_YELLOW.fill(COLOR[COLOR_YELLOW])
-# 灰的格子 
-DIAMOND_GRAY=pygame.surface.Surface(DIAMOND_SIZE).convert()
-DIAMOND_GRAY.fill(COLOR[COLOR_FLAXEN])
-
 # 各色的格子
 DIAMONDS=[]
 for x in range(diamond_color_size):
     diamoand=pygame.surface.Surface(DIAMOND_SIZE).convert()
     diamoand.fill(COLOR[x])
     DIAMONDS.append(diamoand)
+
+DIAMONDS=[]
+for x in range(diamond_color_size):
+    diamoand=pygame.surface.Surface(DIAMOND_SIZE).convert()
+    diamoand.fill(COLOR[x])
+    DIAMONDS.append(diamoand)
+
 
 # 字体
 use_font = pygame.font.Font("FONT.TTF", 16)
@@ -61,7 +52,6 @@ background.fill(COLOR[COLOR_BLACK])
 score_surface = use_font.render("找到终点", True, COLOR[COLOR_BLACK], COLOR[COLOR_FLAXEN])
 # 时间
 clock = pygame.time.Clock()
-
 #标记 
 NOWALL=maze.NOWALL # 无墙
 WALL=maze.WALL  # 有墙
@@ -72,6 +62,17 @@ VERTICAL = maze.VERTICAL # 垂直的
 HORIZONTAL = maze.HORIZONTAL# 水平的
 INFINITE = maze.INFINITE # 无穷远
 
+def DrawCircle(screen,  position, color, pure=False, radius=6, width=6):
+    if pure:
+        pygame.draw.circle(screen, color, position, radius, width)
+    else:
+        pygame.draw.circle(screen, color, position, radius-3, 3)
+        pygame.draw.circle(screen, COLOR[COLOR_RED], position, radius-2, 1)
+        pygame.draw.circle(screen, COLOR[COLOR_GREEN], position, radius-1, 1)
+        pygame.draw.circle(screen, COLOR[COLOR_BLUE], position, radius, 1)
+    #pygame.draw.circle(screen, color, position, radius, 1)
+    #pygame.draw.circle(screen, color, position, radius, 1)
+    #pygame.draw.circle(screen, color, position, radius, 1)
 
 # 下一圈
 def FindNextCircle(startList, walls, grids, rows, cols):
@@ -113,6 +114,82 @@ def FindNextCircle(startList, walls, grids, rows, cols):
     startList.extend(startNextList)
     return startList
 
+def sample_findmainpath_step(r, c, mainList, walls, grids, rows, cols):
+    # 演示生成最短路径过程
+    findMainPath = False
+    mainList.append((r,c))
+    l = grids[r][c]
+    nl=l-1
+    # 最近的
+    if r>0 and NOWALL == walls[r][c][1] and nl == grids[r-1][c]:
+        # move = 'u'
+        nr=r-1
+        nc=c
+    elif c>0 and NOWALL == walls[r][c][0] and nl == grids[r][c-1]:
+        # move = 'l'
+        nr=r
+        nc=c-1
+    elif c<cols-1 and NOWALL == walls[r][c+1][0] and nl == grids[r][c+1] :
+        # move='r'
+        nr=r
+        nc=c+1
+    elif r<rows-1 and NOWALL == walls[r+1][c][1] and nl == grids[r+1][c] :
+        # move='d'
+        nr=r+1
+        nc=c
+    # 找到起点
+    if 0 == nl:
+        mainList.append((nr,nc))
+        findMainPath = True
+    r,c=nr,nc
+    return r,c, findMainPath
+
+def sample_findpathing_step(startList, walls, grids, rows, cols, treasures):
+    # 演示寻路过程
+    # 初始化未访问
+    findPath = False
+    startNextList = [] # 下一步
+    for node in startList:
+        r, c = node
+        l = grids[r][c]
+        ln=l+1
+        if node in treasures:
+            findPath = True
+            startList.clear()
+            break
+        # 可以到达的位置
+        if r>0 and NOWALL == walls[r][c][1] and INFINITE == grids[r-1][c]:
+            # move = 'u'
+            nr=r-1
+            nc=c
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = ln
+        if c>0 and NOWALL == walls[r][c][0] and INFINITE == grids[r][c-1]:
+            # move = 'l'
+            nr=r
+            nc=c-1
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = ln
+        if c<cols-1 and NOWALL == walls[r][c+1][0] and INFINITE == grids[r][c+1] :
+            # move='r'
+            nr=r
+            nc=c+1
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = ln
+        if r<rows-1 and NOWALL == walls[r+1][c][1] and INFINITE == grids[r+1][c] :
+            # move='d'
+            nr=r+1
+            nc=c
+            if (nr,nc) not in startNextList:
+                startNextList.append((nr,nc))
+                grids[nr][nc] = ln
+    # 下一圈
+    startList.clear()
+    startList.extend(startNextList)
+    return findPath, r, c
 
 # 画方块
 def draw_diamond(r, c, screen, diamod):
@@ -130,93 +207,12 @@ def draw_diamond_and_str(r, c, screen, diamod, use_font, string, color, color_ba
     return 
 
 
-# 拆分迷宫
-def split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols):
-    startList = [startPoint]
-    endList = [endPoint]
-    startMap.append(startPoint)
-    endMap.append(endPoint)
-    while startList or endList:
-        split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols)
-    return startMap, endMap
-
-
-# 一步一步执行
-def split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols):
-    # 起点
-    FindNextCircle(startList, walls, grids, rows, cols)
-    startMap+=startList
-    # 终点
-    FindNextCircle(endList, walls, grids, rows, cols)
-    endMap+=endList
-    return startList, endList
-
-
-
-def find_partition_walls(walls, grids, startMap, endMap, rows, cols):
-    tmp_grids=[[ 'e' for i in range(cols)]for j in range(rows)]
-    for s in startMap:
-        tmp_grids[s[0]][s[1]] = 's'
-    part = []
-    # 找到分隔两部分的墙
-    for r in range(rows):
-        for c in range(cols):
-            if WALL == walls[r][c][0] and c > 0:
-                if tmp_grids[r][c-1] != tmp_grids[r][c]:
-                    part.append((r,c,0))
-            if WALL == walls[r][c][1] and r > 0:
-                if tmp_grids[r-1][c] != tmp_grids[r][c]:
-                    part.append((r,c,1))
-    return part
-
-
-# 随机拆一个合适的墙
-def random_down_wall(walls, grids, startMap, endMap, rows, cols):
-    # 找到墙
-    parts = find_partition_walls(walls, grids, startMap, endMap, rows, cols)
-    swr, swc, swd = random.choice(parts)
-    walls[swr][swc][swd] = NOWALL
-    parts.remove((swr, swc, swd))
-    return walls
-
-
-# 差值最大的墙
-def find_diff_partition_wall(walls, grids, startMap, endMap, rows, cols):
-    tmp_grids=[[ 'e' for i in range(cols)]for j in range(rows)]
-    for s in startMap:
-        tmp_grids[s[0]][s[1]] = 's'
-    wall = None
-    l = 0
-    # 找到分隔两部分的墙
-    for r in range(rows):
-        for c in range(cols):
-            if WALL == walls[r][c][0] and c > 0:
-                if tmp_grids[r][c-1] != tmp_grids[r][c]:
-                    if l < abs(grids[r][c-1] - grids[r][c]):
-                        wall = (r,c,0)
-                        l = abs(grids[r][c-1] - grids[r][c])
-            if WALL == walls[r][c][1] and r > 0:
-                if tmp_grids[r-1][c] != tmp_grids[r][c]:
-                    if l < abs(grids[r-1][c] - grids[r][c]):
-                        wall = (r,c,1)
-                        l = abs(grids[r-1][c] - grids[r][c])
-    return wall
-
-# 拆两边差值最大的墙
-def diff_down_wall(walls, grids, startMap, endMap, rows, cols):
-    # 找到墙
-    wall = find_diff_partition_wall(walls, grids, startMap, endMap, rows, cols)
-    swr, swc, swd = wall
-    walls[swr][swc][swd] = NOWALL
-    return walls
-
-
-
 # Sample algorithm
 def multipath_maze_demo(rows, cols):
     maze_h = rows * DIAMOND_SIZE[0] + 1
     maze_w = cols * DIAMOND_SIZE[0] + 1
     size = (maze_w, maze_h)
+    # 迷宫图层
     maze_surface=pygame.surface.Surface(size).convert()
     #walls = maze.aldous_broder_maze(rows, cols)
     #walls = maze.depth_maze(rows, cols)
@@ -224,146 +220,82 @@ def multipath_maze_demo(rows, cols):
     #walls = maze.prim_maze(rows, cols)
     #walls = maze.wilson_maze(rows, cols)
     walls = maze.wilson_maze(rows, cols)
-    POSX=40
-    POSY=40
+    # 画
+    posion_xy=(40, 40)
     # 初始化未访问
     grids=[[ INFINITE for i in range(cols)]for j in range(rows)]
     # 起点
     # 标记迷宫
     r=0
     c=0
-    splitMaze=False
+    startPoint=(r,c)  # 起点
+    endPoint=(rows-1,cols-1)  # 终点
+    # 拆出多条路
+    maze.down_wall_maze(walls, rows, cols, startPoint, endPoint)
+    maze.down_wall_maze(walls, rows, cols, startPoint, endPoint)
+    # 随机N个宝箱
+    #n=3
+    treasures=[]   
+    tmpTreasures=[] 
+    #while n > 0:
+    #    r = random.randint(0, rows-1)
+    #    c = random.randint(0, cols-1)
+    #    if (r,c) not in treasures and (r,c) != startPoint and (r,c) != endPoint:
+    #        treasures.append((r,c))
+    #        tmpTreasures.append((r,c))
+    #        n -=1
+    x1 = int(rows/3)
+    y1 = int(cols/3)
+    treasures.append((x1,y1))
+    treasures.append((x1,y1*2))
+    treasures.append((x1*2,y1))
+    treasures.append((x1*2,y1*2))
+    tmpTreasures.extend(treasures)
+    # 
+    mainList=[] # 主路径
+    # 标记
     findEndPoint=False
     findPath=False
+    findTreasures=None
     findMainPath=None
-    secondWay=False
-    # 起点
-    startPoint=(r,c)
-    # 终点
-    endPoint=(rows-1,cols-1)
-    mainList=[] # 主路径
     # 
     startList=[startPoint]
-    endList=[endPoint]
-    grids[startPoint[0]][startPoint[1]]=0 # 标记已经到过格子距离
-    grids[endPoint[0]][endPoint[1]]=0
-    # 没有访问过的格子
-    notUseGrids = [] 
-    for tr in range(rows):
-        for tc in range(cols):
-            notUseGrids.append((tr,tc))
-    # 
+    grids[startPoint[0]][startPoint[1]]=0 # 标记已经到过格子距离   
     startMap=[]
-    endMap=[]
     startMap += startList
-    endMap += endList
     # 
     parts = []
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-        if not splitMaze:    
-            # 演示分区
-            # python 传参是引用传递 （不可改变参数指向，可改变参数的内部值。）
-            # 可变对象：列表，字典（当参数时，函数内部的修改可以带出外部；但是赋值操作不能带出，此时的赋值操作相当于不可变对象的赋值）
-            # 不可变的对象：数字，元组，字符串（当参数时，函数内部的修改不能带出；不可变对象修改值时相当于修改指向地址。）
-            split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols)
-            # 
-            # split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols)
-            if not startList and not endList:
-                splitMaze = True
-        elif not secondWay:
-            # 演示拆墙
-            parts = find_partition_walls(walls, grids, startMap, endMap, rows, cols)
-            # 随机拆
-            # random_down_wall(walls, grids, startMap, endMap, rows, cols)
-            # parts = find_partition_walls(walls, grids, startMap, endMap, rows, cols)
-            rand_wall = random.choice(parts)
-            swr, swc, swd = rand_wall
-            parts.remove((swr, swc, swd))
-            walls[swr][swc][swd] = NOWALL
-            startMap=[]
-            endMap=[]
-            secondWay = True
-            # 初始化未访问
-            grids=[[ INFINITE for i in range(cols)]for j in range(rows)]
-            startList=[startPoint]
-            grids[startPoint[0]][startPoint[1]]=0 # 标记已经到过格子距离
-        elif not findPath:
-            # 演示寻路过程
-            # 初始化未访问
-            startNextList = [] # 下一步
-            for node in startList:
-                r, c = node
-                l = grids[r][c]
-                ln=l+1
-                if node == endPoint:
-                    findPath = True
-                    startList.clear()
-                    break
-                # 可以到达的位置
-                if r>0 and NOWALL == walls[r][c][1] and INFINITE == grids[r-1][c]:
-                    # move = 'u'
-                    nr=r-1
-                    nc=c
-                    if (nr,nc) not in startNextList:
-                        startNextList.append((nr,nc))
-                        grids[nr][nc] = ln
-                if c>0 and NOWALL == walls[r][c][0] and INFINITE == grids[r][c-1]:
-                    # move = 'l'
-                    nr=r
-                    nc=c-1
-                    if (nr,nc) not in startNextList:
-                        startNextList.append((nr,nc))
-                        grids[nr][nc] = ln
-                if c<cols-1 and NOWALL == walls[r][c+1][0] and INFINITE == grids[r][c+1] :
-                    # move='r'
-                    nr=r
-                    nc=c+1
-                    if (nr,nc) not in startNextList:
-                        startNextList.append((nr,nc))
-                        grids[nr][nc] = ln
-                if r<rows-1 and NOWALL == walls[r+1][c][1] and INFINITE == grids[r+1][c] :
-                    # move='d'
-                    nr=r+1
-                    nc=c
-                    if (nr,nc) not in startNextList:
-                        startNextList.append((nr,nc))
-                        grids[nr][nc] = ln
-            # 下一圈
-            startList.clear()
-            startList.extend(startNextList)
+        if not findPath:
+            # 寻路过程
+            if tmpTreasures:  # 找宝箱
+                findPath, r, c = sample_findpathing_step(startList, walls, grids, rows, cols, tmpTreasures)
+                # treasures.remove((r, c))
+                treasurePoint=(r,c)
+            else:  # 找终点
+                findPath, r, c = sample_findpathing_step(startList, walls, grids, rows, cols, [endPoint])
         elif not findMainPath:
-            # 演示生成最短路径过程
-            mainList.append((r,c))
-            l = grids[r][c]
-            nl=l-1
-            # 最近的
-            if r>0 and NOWALL == walls[r][c][1] and nl == grids[r-1][c]:
-                # move = 'u'
-                nr=r-1
-                nc=c
-            elif c>0 and NOWALL == walls[r][c][0] and nl == grids[r][c-1]:
-                # move = 'l'
-                nr=r
-                nc=c-1
-            elif c<cols-1 and NOWALL == walls[r][c+1][0] and nl == grids[r][c+1] :
-                # move='r'
-                nr=r
-                nc=c+1
-            elif r<rows-1 and NOWALL == walls[r+1][c][1] and nl == grids[r+1][c] :
-                # move='d'
-                nr=r+1
-                nc=c
-            # 找到起点
-            if 0 == nl:
-                mainList.append((nr,nc))
-                findMainPath = True
-            r,c=nr,nc
-        
-            
-
+            # 回溯路径
+            r, c, findMainPath = sample_findmainpath_step(r, c, mainList, walls, grids, rows, cols)
+            # 
+            if findMainPath:
+                # 宝箱已经找全部找到
+                if not tmpTreasures:
+                    findEndPoint = True
+        else:
+            if not findEndPoint:
+                grids=[[ INFINITE for i in range(cols)]for j in range(rows)]
+                startMap=[]
+                if tmpTreasures:
+                    tmpTreasures.remove(treasurePoint)
+                    findPath = False
+                    findMainPath = False
+                    startList=[treasurePoint]
+                    grids[treasurePoint[0]][treasurePoint[1]]=0 # 标记已经到过格子距离   
+                    startMap += startList
         # 背景
         screen.blit(background, (0, 0))
         # maze_surface
@@ -380,25 +312,19 @@ def multipath_maze_demo(rows, cols):
         for pos in startMap:
             s = "{}".format(grids[pos[0]][pos[1]])
             draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMONDS[COLOR_WHEAT], use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_WHEAT])
-        for pos in endMap:
-            s = "{}".format(grids[pos[0]][pos[1]])
-            draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMONDS[COLOR_FLAXEN], use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_FLAXEN])
         # 循环外圈
         if startList and not mainList:
             for pos in startList:
                 s = "{}".format(grids[pos[0]][pos[1]])
-                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_RED, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_RED])
-            for pos in endList:
-                s = "{}".format(grids[pos[0]][pos[1]])
-                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_RED, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_RED])
+                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMONDS[COLOR_RED], use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_RED])
         # 路径
         if mainList:
             for pos in mainList:
                 s = "{}".format(grids[pos[0]][pos[1]])
-                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMOND_YELLOW, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_YELLOW])
+                draw_diamond_and_str(pos[0], pos[1], maze_surface, DIAMONDS[COLOR_YELLOW], use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_YELLOW])
             # r,c
             s = "{}".format(grids[pos[0]][pos[1]])
-            draw_diamond_and_str(r, c, maze_surface, DIAMOND_GREEN, use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_GREEN])
+            draw_diamond_and_str(r, c, maze_surface, DIAMONDS[COLOR_GREEN], use_font12, s, COLOR[COLOR_BLACK], COLOR[COLOR_GREEN])
         # 画外墙
         pygame.draw.rect(maze_surface, COLOR[COLOR_RED], (0, 0, DIAMOND_LEN*cols+1, DIAMOND_LEN*rows+1), 2)
         # 画没打通的墙
@@ -406,13 +332,25 @@ def multipath_maze_demo(rows, cols):
         # 
         if parts:
             DrawWallList(maze_surface, COLOR[COLOR_RED], DIAMOND_SIZE, parts, rows, cols)
+        # 
+        if startPoint:
+            pos = (startPoint[1]*DIAMOND_LEN + 10, startPoint[0]*DIAMOND_LEN + 10)
+            DrawCircle(maze_surface, pos, COLOR[COLOR_RED])
+        if endPoint:
+            pos = (endPoint[1]*DIAMOND_LEN + 10, endPoint[0]*DIAMOND_LEN + 10)
+            DrawCircle(maze_surface, pos, COLOR[COLOR_RED])
+        # 
+        if treasures:
+            for p in treasures:
+                pos = (p[1]*DIAMOND_LEN + 10, p[0]*DIAMOND_LEN + 10)
+                DrawCircle(maze_surface, pos, COLOR[COLOR_GOLD])
 
         # 贴maze
-        screen.blit(maze_surface, (POSX, POSY))
+        screen.blit(maze_surface, posion_xy)
 
         # 打印文字提示
         if findEndPoint:
-            screen.blit(score_surface, (POSX+50, POSY+rows*22))
+            screen.blit(score_surface, (100, 20+rows*22))
         # 帧率
         clock.tick(25)
 
