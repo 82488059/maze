@@ -231,8 +231,10 @@ def multipath_maze_demo(rows, cols):
     startPoint=(r,c)  # 起点
     endPoint=(rows-1,cols-1)  # 终点
     # 拆出多条路
-    maze.down_wall_maze(walls, rows, cols, startPoint, endPoint)
-    maze.down_wall_maze(walls, rows, cols, startPoint, endPoint)
+    maze.down_wall_maze_random(walls, rows, cols, startPoint, endPoint)
+    maze.down_wall_maze_random(walls, rows, cols, startPoint, endPoint)
+    maze.down_wall_maze_random(walls, rows, cols, startPoint, endPoint)
+    maze.down_wall_maze_random(walls, rows, cols, startPoint, endPoint)
     # 随机N个宝箱
     #n=3
     treasures=[]   

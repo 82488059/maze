@@ -543,6 +543,31 @@ def split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols)
         split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols)
     return startMap, endMap
 
+# 拆分迷宫
+def split_maze_random(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols):
+    startList = [startPoint]
+    endList = [endPoint]
+    startMap.append(startPoint)
+    endMap.append(endPoint)
+    while startList or endList:
+        split_maze_step_random(walls, grids, startList, endList, startMap, endMap, rows, cols)
+    return startMap, endMap
+
+# 一步一步执行
+def split_maze_step_random(walls, grids, startList, endList, startMap, endMap, rows, cols):
+    # 起点
+    x = random.randint(1, 3)
+    while x > 0:
+        x -= 1
+        FindNextCircle(startList, walls, grids, rows, cols)
+        startMap+=startList
+    # 终点
+    x = random.randint(1, 3)
+    while x > 0:
+        x -= 1
+        FindNextCircle(endList, walls, grids, rows, cols)
+        endMap+=endList
+    return startList, endList
 
 # 一步一步执行
 def split_maze_step(walls, grids, startList, endList, startMap, endMap, rows, cols):
@@ -586,6 +611,30 @@ def down_wall_maze(walls, rows, cols, startPoint, endPoint):
     endMap += endList
     # 
     split_maze(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols)
+    # 
+    parts = find_partition_walls(walls, startMap, endMap, rows, cols)
+    down_wall = random.choice(parts)
+    swr, swc, swd = down_wall
+    parts.remove((swr, swc, swd))
+    walls[swr][swc][swd] = NOWALL
+    return walls
+
+
+# 拆出第二条路
+def down_wall_maze_random(walls, rows, cols, startPoint, endPoint):
+    startList=[startPoint]
+    endList=[endPoint]
+    ## 
+    grids=[[ INFINITE for i in range(cols)]for j in range(rows)]
+    grids[startPoint[0]][startPoint[1]]=0 # 标记已经到过格子距离
+    grids[endPoint[0]][endPoint[1]]=0
+    # 
+    startMap=[]
+    endMap=[]
+    startMap += startList
+    endMap += endList
+    # 
+    split_maze_random(walls, grids, startPoint, endPoint, startMap, endMap, rows, cols)
     # 
     parts = find_partition_walls(walls, startMap, endMap, rows, cols)
     down_wall = random.choice(parts)
