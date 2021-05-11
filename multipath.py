@@ -70,9 +70,6 @@ def DrawCircle(screen,  position, color, pure=False, radius=6, width=6):
         pygame.draw.circle(screen, COLOR[COLOR_RED], position, radius-2, 1)
         pygame.draw.circle(screen, COLOR[COLOR_GREEN], position, radius-1, 1)
         pygame.draw.circle(screen, COLOR[COLOR_BLUE], position, radius, 1)
-    #pygame.draw.circle(screen, color, position, radius, 1)
-    #pygame.draw.circle(screen, color, position, radius, 1)
-    #pygame.draw.circle(screen, color, position, radius, 1)
 
 # 下一圈
 def FindNextCircle(startList, walls, grids, rows, cols):
@@ -252,7 +249,7 @@ def multipath_maze_demo(rows, cols):
         treasures.append((x1,y1*2))
         treasures.append((x1*2,y1))
         treasures.append((x1*2,y1*2))
-
+    # 
     tmpTreasures.extend(treasures)
     # 
     mainList=[] # 主路径
